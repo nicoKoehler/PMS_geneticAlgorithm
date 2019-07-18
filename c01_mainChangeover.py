@@ -4,8 +4,8 @@ import pyodbc as db
 import random
 import pandas as pd
 import numpy as np
-import c112_GA_koehler as gak
-import c999_globVariables as glob
+import c02_geneticAlgorithmFunctions as gak
+import c03_globalVariables as glob
 import sys
 import matplotlib.pyplot as plt
 import math
