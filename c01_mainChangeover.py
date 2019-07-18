@@ -7,6 +7,7 @@
 # c = code, for .py files only
 # d = dictionary
 # f = float
+# g = graph
 # i = integer
 # l = list
 # lim = limit
@@ -270,14 +271,14 @@ y2Min = math.floor(min(lIllegal_history))-0.1
 y2Max = math.ceil(min(lIllegal_history))+0.1
 
 # set parameters for saving the plot
-dt = datetime.datetime.now()
-iMilliseconds = int(round(dt.timestamp() * 1000))
+dateTime = datetime.datetime.now()
+iMilliseconds = int(round(dateTime.timestamp() * 1000))
 
-sFileNamePl0t = str(iMilliseconds)+"__RESULT_"+str(math.floor(lMinFitness[0]))+"__orders_"+str(len(glob.lGenome_0))+"--machines_"+str(glob.iNumberMachines)+"--Runs_"+str(glob.iBreakGeneration)+"--popSize_"+str(glob.limPopulationSize)+"--mut_"+str(glob.fMutationRate)+"--King_"+str(glob.bKingPrevails)+"--fAlloc_"+str(glob.iForceAllocation_G)+"--CAT_"+str(glob.bCataclysm)+"_"+str(glob.iCataclysmicProb)+"_"+str(glob.iDeletionProb)
-sPlotPath = "C:\\Users\\u374441\\Desktop\\desktopWorkfiles\\201905 Changeovers\\99_Output\\"+sFileNamePl0t+".png"
+sFileNamePlot = str(iMilliseconds)+"__RESULT_"+str(math.floor(lMinFitness[0]))+"__orders_"+str(len(glob.lGenome_0))+"--machines_"+str(glob.iNumberMachines)+"--Runs_"+str(glob.iBreakGeneration)+"--popSize_"+str(glob.limPopulationSize)+"--mut_"+str(glob.fMutationRate)+"--King_"+str(glob.bKingPrevails)+"--fAlloc_"+str(glob.iForceAllocation_G)+"--CAT_"+str(glob.bCataclysm)+"_"+str(glob.iCataclysmicProb)+"_"+str(glob.iDeletionProb)
+sPlotPath = "C:\\Users\\u374441\\Desktop\\desktopWorkfiles\\201905 Changeovers\\99_Output\\"+sFileNamePlot+".png"
 
 # create subplot
-fig, ax1 = plt.subplots()
+gFitness, ax1 = plt.subplots()
 
 # set options
 color = "tab:blue"
@@ -293,7 +294,7 @@ ax2.set_ylabel("Illegal Percentage")
 ax2.set_ylim(y2Min, y2Max)
 ax2.plot(lIllegal_history, color=color, linestyle="--")
 
-fig.tight_layout()
+gFitness.tight_layout()
 
 #save and plot
 plt.savefig(sPlotPath)
