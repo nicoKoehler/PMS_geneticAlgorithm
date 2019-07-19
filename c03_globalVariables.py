@@ -21,8 +21,8 @@ global iForceAllocation_G
 global bKingPrevails
 
 fMutationRate = 0.12	# best @ 1% 
-limPopulationSize = 100	# has to be multiple of 2
-iBreakGeneration = 20
+limPopulationSize = 150	# has to be multiple of 2
+iBreakGeneration = 10
 iBreakImport = 10000
 iForceAllocation_G = 0.8
 
@@ -30,7 +30,7 @@ iGenerationCount = 0
 iPastAverage = 5
 iNumberMachines = 4
 iDeletionProb = 0.5
-iCataclysmicProb = 0.03
+iCataclysmicProb = 0.08
 iChildCounter = limPopulationSize
 
 bKingPrevails = True

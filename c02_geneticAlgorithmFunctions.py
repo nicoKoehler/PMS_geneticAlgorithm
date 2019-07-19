@@ -195,6 +195,7 @@ def udf_calcFitness3(dPopulation, dWcList, dMaterialFamily, dTimeMatrix, dMateri
 
 	return lFitness, dMembers, lMinFitness, fMinFitness_run, fIllegalPerc
 
+
 # select best parents from pool
 def udf_selectParentsFromPool(dMembers, lFitness_sorted, dPopulation):
 	
@@ -248,6 +249,7 @@ def udf_selectParentsFromPool(dMembers, lFitness_sorted, dPopulation):
 				break
 
 	return lPopulation_new, lPopulation_new_names, dPopulation_new
+
 
 # perform [p]artially [m]apped [x]CrossOver
 def udf_matingPMX(lPopulation_new, iChildCounter, lPopulation_new_names, dPopulation_new, dMembers, fMutationRate):
@@ -398,6 +400,7 @@ def udf_matingPMX(lPopulation_new, iChildCounter, lPopulation_new_names, dPopula
 
 
 	return lPopulation_offspring, iChildCounter, lPopulation_offspring_names, dPopulation_offspring
+
 
 # mutation by swaping
 def udf_mutateSwap(fMutationRate,lPopulation_offspring, dPopulation_offspring):
@@ -740,7 +743,6 @@ def udf_listSortByBreak(lList, lBreaker, sSortBy):
 		iPreviousBreak = iNextBreak
 
 
-
 def udf_printMachinesCMD(lList, lBreaker, sMemberName):
 
 	'''
@@ -830,9 +832,6 @@ def udf_printMachinesFamCMD(lList, lBreaker, memberName, dMaterialFamily, dWcLis
 	print("--------------------------------------")
 
 
-
-
-
 def udf_allowedMutations (lChild, lChildBreak, dWcList, dMaterialFamily, dMachineConfig):
 
 	'''
@@ -849,7 +848,8 @@ def udf_allowedMutations (lChild, lChildBreak, dWcList, dMaterialFamily, dMachin
 	RETURNS:
 	none
 
-
+	SUMMARY
+	Mutates member based on allowed positions
 	'''
 
 	for iC1, gene in enumerate(lChild):	# iterate over mother genes for the first child
@@ -891,11 +891,11 @@ def udf_allowedMutations (lChild, lChildBreak, dWcList, dMaterialFamily, dMachin
 			
 		if iMyMachine not in lAllowedMachines:
 			iForceAllocation = glob.iForceAllocation_G
+		
 
 		if random.uniform(0.0, 1.0) < max(glob.fMutationRate, iForceAllocation):
 			fRandXO2 = random.choice(lAllowedPositions)
 			lChild[iC1], lChild[fRandXO2] = lChild[fRandXO2], lChild[iC1]
-
 
 
 
