@@ -5,89 +5,70 @@ import numpy as np
 import math
 import sys
 import statistics as stat
-import c999_globVariables as glob
+import c03_globalVariables as glob
 
 filePopulationHistory = open("C:\\Users\\u374441\\Danfoss\\PS WF - MSA - Documents\\Projects\\2019 03 - Changeover\\populationHistory.txt", "w", encoding="utf-8")
 
 
-#sort array by fitness
+# sort array by fitness
 def udf_sortByFitness(lFitness):
 	''' sorts a povided fitness array by fitness for each member. 
 	It further assigns a selection probability based on the distance to the worst member.
 	Further it calculates a running sum and sorts accordingly.
 	E.g. the further a member is away from the population's worst the higher the chances of later selection will be.
+	
+	INPUT: Fitness Array, with minimum colums [member], [fitness]
+	SIDE EFFECTS: none	
 	RETURNS: sorted fitness array with columns [selectionProb_cumSum],[member]  '''
 
-	dfFitness = pd.DataFrame(lFitness, columns=['member','fitness']) #load member and calc. fitness into dataFrame
+	dfFitness = pd.DataFrame(lFitness, columns=['member','fitness']) # load member and calc. fitness into dataFrame
 	dfFitness['distanceToWorst'] = dfFitness['fitness'] - (np.nanmax(dfFitness['fitness'].values)+1) # calculate distance to worst fitness
 	dfFitness['selectionProb'] = dfFitness['distanceToWorst'] / dfFitness['distanceToWorst'].sum() # calculate selection probability as % of distanceToWorst
-	dfFitness['selectionProb'] = dfFitness['selectionProb'].abs() #ensure it is a positive number
-	dfFitness = dfFitness.sort_values('selectionProb', ascending=False) #sort descing by selection probability
+	dfFitness['selectionProb'] = dfFitness['selectionProb'].abs() # ensure it is a positive number
+	dfFitness = dfFitness.sort_values('selectionProb', ascending=False) # sort descing by selection probability
 	dfFitness['selectionProb_cumSum'] = dfFitness['selectionProb'].cumsum(axis=0) # create cummulative sum of selection probability
 	dfFitness=dfFitness.round({'selectionProb':5, 'selectionProb_cumSum':5}) # round probability
 	lFitness_sorted = dfFitness[['selectionProb_cumSum','member']].values.tolist() # convert dataFrame to regular python list
 
 	return lFitness_sorted
 
-#calculate fitness of a population
-def udf_calcFitness(lPopulation, dWcList, dMaterialFamily, dTimeMatrix, lMinFitness, lPopulation_names):
-	#initialize all values
-	sMaterial1 = ''
-	sMaterial2 = ''
-	sFamily1 = ''
-	sFamily2 = ''
-	sQuantity1 = 0
-	sQuantity2 = 0
-	sCycleTime1 = 0
-	sCycleTime2 = 0
-	sChangeovertime = 0
-	fFitness = 0
-	lFitness = []
-	sMemberName = ''
-	dMembers = {}
 
-	for index0,member in enumerate(lPopulation):	# for every member in a population
+# ACTIVE calculate fitness of a population
+def udf_calcFitness3(dPopulation, dWcList, dMaterialFamily, dTimeMatrix, dMaterialCO,lMinFitness, dMachineConfig):
+	
+	'''
+	INPUT:
+	:param dPopulation:	 		>dict; population
+	:param dWcList: 			>dict; with orders and material numbers
+	:param dMaterialFamily:		>dict; mapping of material to family index
+	:param dTimeMatrix: 		>dict; family change over times
+	:param dMaterialCO: 		>dict; material change over times
+	:param lMinFitness: 		>list; minimum fitness recorded in each run
+	:param dMachineConfig: 		>dict; illegal machine configuration
+	
+	SIDE EFFECTS: 
+	none
 
-		fFitness = 0 #reset fitness
-		for index1, gene in enumerate(member):		# for every gene in a member
-			#print(index, gene)
-			
-
-			if index1 < len(member)-1:				# if not the last material >> last material does not have changeover Times: BUT has processing times--> adj. needed
-				sMaterial1 = dWcList[gene]['material']	# get family information
-				sMaterial2 = dWcList[member[index1+1]]['material']
-				sQuantity1 = dWcList[gene]['quantity']
-				sQuantity2 = dWcList[member[index1+1]]['quantity']
-				sFamily1 = dMaterialFamily[sMaterial1]['family']
-				sFamily2 = dMaterialFamily[sMaterial2]['family']
-				sCycleTime1 = dMaterialFamily[sMaterial1]['cycleTime']
-				sCycleTime2 = dMaterialFamily[sMaterial2]['cycleTime']
-
-				sChangeovertime = dTimeMatrix[str(sFamily1)+"-"+str(sFamily2)] # set changeover time by family
-
-				fFitness += (sQuantity1*sCycleTime1)+(sQuantity2*sCycleTime2)+(sChangeovertime) #calculate overall fitness for every pair
-
-		sMemberName = lPopulation_names[index0] # set the memberName based on previous input and iterations
+	RETURN: 
+	:return lFitness: 			>list; with all member fitnesses
+	:return dMembers: 			>dict; for members, genome, name and fitness
+	:return lMinFitness:		>list; minimum fitness per run
+	:return fMinFitness_run:	>float; minimum fitness for this run
+	:return fIllegalPerc: 		>float; illegal percentage for this run
+	
+	SUMMARY:
+	> Calculates the fitness per member of a population/array based on changeover times between materials (default to family).
+	Applys penalty terms for illegal configurations and uneven population distribution
+	Loops (outer to inner):
+	0: member in population
+	1: machines in member, as per break points
+	2: genes in Machine in Member
 
 
-		lFitness.append([sMemberName, fFitness]) # create fitness array
 
-		#like the appendix, not really needed! 
-		if fFitness <= lMinFitness[0]:
-			lMinFitness[0] = fFitness
-			lMinFitness[1] = sMemberName
-			lMinFitness[2] = member
-
-		#create member array with name, fitness and genome
-		dMembers[sMemberName] = {}
-		dMembers[sMemberName]['Fitness'] = fFitness
-		dMembers[sMemberName]['genome'] = member
-
-	return lFitness, dMembers, lMinFitness
-
-
-def udf_calcFitness2(lPopulation, dPopulation, dWcList, dMaterialFamily, dTimeMatrix, lMinFitness, lPopulation_names, iNumberMachines, dMachineConfig):
-	#initialize all values
+	'''
+	
+	# initialize all values
 	sMaterial1 = ''
 	sMaterial2 = ''
 	sFamily1 = ''
@@ -109,7 +90,6 @@ def udf_calcFitness2(lPopulation, dPopulation, dWcList, dMaterialFamily, dTimeMa
 	#+++++++++++++++++++++++++++++++++++++++++++++++++++++++< MEMBER LOOP >+++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	for index0, (key,member) in enumerate(dPopulation.items()) :	# for every member in a population
 
-		#print(index0, member["genome"], member["breaker"])
 
 		#+++++++++++++++++++++++++++++++++++++++++++++++++++++++< MACHINE LOOP >+++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -120,203 +100,25 @@ def udf_calcFitness2(lPopulation, dPopulation, dWcList, dMaterialFamily, dTimeMa
 		iMemberRuns = 0
 		bisIllegal = False
 
-		#if glob.bDebug1 == True: print("--------------------------------------------new member: ", key)
-
-		#print(">>>> ", index0, member)
 		iTotalRuns +=1
 		iIllegalConfigMultiplier = 1
 
-		for k in range(0, iNumberMachines):
+		for k in range(0, glob.iNumberMachines):
 			
-			if k == iNumberMachines-1:
+			if k == glob.iNumberMachines-1:
 				iNextBreak = len(member["genome"])
 
 			else:
 				iNextBreak = member["breaker"][k]
-				#iNextBreak = len(member["genome"])
 
-
-			fFitnessM = 0 #reset fitness
-			
-
-			#print("-----------------------new sub-genome")
-			
-			#print("Sub-Member: ", key, member["genome"][iPreviousBreak:iNextBreak], member["breaker"])
-
-			#+++++++++++++++++++++++++++++++++++++++++++++++++++++++< GENE LOOP >+++++++++++++++++++++++++++++++++++++++++++++++++++++++
-			for index1, gene in enumerate(member["genome"][iPreviousBreak:iNextBreak]):		# for every gene in a member
-				
-					
-
-				iMemberRuns +=1
-				#print(member["genome"][iPreviousBreak:iNextBreak])
-				if index1 < len(member["genome"][iPreviousBreak:iNextBreak])-1:				# if not the last material >> last material does not have changeover Times: BUT has processing times--> adj. needed
-					sMaterial1 = dWcList[gene]['material']	# get family information
-					sMaterial2 = dWcList[member["genome"][iCountIndex1+1]]['material']
-					sQuantity1 = dWcList[gene]['quantity']
-					sQuantity2 = dWcList[member["genome"][iCountIndex1+1]]['quantity']
-					sFamily1 = dMaterialFamily[sMaterial1]['family']
-					sFamily2 = dMaterialFamily[sMaterial2]['family']
-					sCycleTime1 = dMaterialFamily[sMaterial1]['cycleTime']
-					sCycleTime2 = dMaterialFamily[sMaterial2]['cycleTime']
-
-					#print("ID:",iCountIndex1,":", sCycleTime1,sQuantity1,sCycleTime2,sQuantity2, sChangeovertime)
-
-					sChangeovertime = dTimeMatrix[str(sFamily1)+"-"+str(sFamily2)] # set changeover time by family
-
-					fFitnessM += (sQuantity1*sCycleTime1)+(sChangeovertime) #calculate overall fitness for every pair
-					
-					if (k+1) in dMachineConfig[sFamily1] or (k+1) in dMachineConfig[sFamily2]:
-						iIllegalConfigMultiplier = 50
-						bisIllegal = True
-						#print("E1 Illegal config found", gene,member["genome"][iCountIndex1+1] , k+1, dMachineConfig[sFamily1], dMachineConfig[sFamily2])
-
-				else: 
-					#print("Adding last material processing w/o CO: ", gene)
-					sMaterial1 = dWcList[gene]['material']	
-					sQuantity1 = dWcList[gene]['quantity']
-					sCycleTime1 = dMaterialFamily[sMaterial1]['cycleTime']
-					sFamily1 = dMaterialFamily[sMaterial1]['family']
-					fFitnessM += (sQuantity1*sCycleTime1)  
-
-					if (k+1) in dMachineConfig[sFamily1]:
-						iIllegalConfigMultiplier = 50
-						bisIllegal = True
-						#print("E2 Illegal config found", gene, k, dMachineConfig[sFamily1])
-				
-
-
-
-				iCountIndex1 += 1
-
-				#print("FitnessM: ", fFitnessM)
-
-			fFitness += fFitnessM
-			fFitnessBalance.append(fFitnessM)
-
-			iPreviousBreak = iNextBreak
-			
-			#print("Fitness All: ", fFitness)
-
-		fFitness = (fFitness+stat.stdev(fFitnessBalance))*iIllegalConfigMultiplier
-
-		if bisIllegal == True:
-			iIllegalRuns +=1
-			
-			#if glob.bDebug1 == True: print("Illegal Stuff found")
-			#if glob.bDebug1 == True: print("Fitness: ", fFitness, iIllegalConfigMultiplier)
-			#if glob.bDebug1 == True: print("Others: ", member["genome"], member["breaker"])
-
-		else: 
-			if glob.bDebug1 == True: print("--------------------------------------------new member: ", key)
-			if glob.bDebug1 == True: print("Fitness: ", fFitness, iIllegalConfigMultiplier)
-			if glob.bDebug1 == True: print("Others: ", fFitnessBalance)
-
-		#print(fFitnessBalance, stat.stdev(fFitnessBalance))
-		# add stDev of distribution as penalty term
-		
-		#print("Fitness: ", fFitness)
-		#if iIllegalConfigMultiplier >1:
-		#	print(key,iIllegalConfigMultiplier, fFitness ,member["genome"], member["breaker"])
-
-		sMemberName = key # set the memberName based on previous input and iterations
-
-
-		lFitness.append([sMemberName, fFitness]) # create fitness array
-
-
-
-		#set minimum fitness if it is lower than the previous fitness
-		if fFitness < lMinFitness[0]:
-			lMinFitness[0] = fFitness
-			lMinFitness[1] = sMemberName
-			lMinFitness[2] = member["genome"]
-			lMinFitness[3] = member["breaker"]
-			lMinFitness[4] = "Generation: "+str(glob.iGenerationCount-1)
-
-		if fFitness < fMinFitness_run:
-			fMinFitness_run = fFitness
-
-		#create member array with name, fitness and genome
-		dMembers[sMemberName] = {}
-		dMembers[sMemberName]['fitness'] = fFitness
-		dMembers[sMemberName]['genome'] = member["genome"]
-		dMembers[sMemberName]["illegal"] = iIllegalConfigMultiplier
-		#print("-----member runs: ",iMemberRuns)
-
-	if glob.bDebug1 == True: print("runs: ", iTotalRuns, iIllegalRuns, iIllegalRuns/iTotalRuns)
-	fIllegalPerc = iIllegalRuns/iTotalRuns
-	return lFitness, dMembers, lMinFitness, fMinFitness_run, fIllegalPerc
-
-
-def udf_calcFitness3(lPopulation, dPopulation, dWcList, dMaterialFamily, dTimeMatrix, dMaterialCO,lMinFitness, lPopulation_names, iNumberMachines, dMachineConfig):
-	#initialize all values
-	sMaterial1 = ''
-	sMaterial2 = ''
-	sFamily1 = ''
-	sFamily2 = ''
-	sQuantity1 = 0
-	sQuantity2 = 0
-	sCycleTime1 = 0
-	sCycleTime2 = 0
-	sChangeovertime = 0
-	fFitness = 0
-	lFitness = []
-	sMemberName = ''
-	dMembers = {}
-	fMinFitness_run = 100000000
-	iTotalRuns = 0.0
-	iIllegalRuns = 0.0
-	fIllegalPerc = 0.0
-
-	#+++++++++++++++++++++++++++++++++++++++++++++++++++++++< MEMBER LOOP >+++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	for index0, (key,member) in enumerate(dPopulation.items()) :	# for every member in a population
-
-		#print(index0, member["genome"], member["breaker"])
-
-		#+++++++++++++++++++++++++++++++++++++++++++++++++++++++< MACHINE LOOP >+++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-		iPreviousBreak = 0
-		fFitness = 0
-		iCountIndex1 = 0
-		fFitnessBalance = []
-		iMemberRuns = 0
-		bisIllegal = False
-
-		#if glob.bDebug1 == True: print("--------------------------------------------new member: ", key)
-
-		#print(">>>> ", index0, member)
-		iTotalRuns +=1
-		iIllegalConfigMultiplier = 1
-
-		for k in range(0, iNumberMachines):
-			
-			if k == iNumberMachines-1:
-				iNextBreak = len(member["genome"])
-
-			else:
-				iNextBreak = member["breaker"][k]
-				#iNextBreak = len(member["genome"])
-
-
-			fFitnessM = 0 #reset fitness
-			
-
-			#print("-----------------------new sub-genome")
-			
-			#print("Sub-Member: ", key, member["genome"][iPreviousBreak:iNextBreak], member["breaker"])
+			fFitnessM = 0 # reset fitness
 			lGenomeW0 = [x for x in member["genome"][iPreviousBreak:iNextBreak] if x != 0]
 
-
-			#print(lGenomeW0)
-			#print(member["genome"])
 			#+++++++++++++++++++++++++++++++++++++++++++++++++++++++< GENE LOOP >+++++++++++++++++++++++++++++++++++++++++++++++++++++++
 			for index1, gene in enumerate(lGenomeW0):		# for every gene in a member
-				
-				#print("iCountIndex1: ", iCountIndex1)
 
 				iMemberRuns +=1
-				#print(member["genome"][iPreviousBreak:iNextBreak])
+
 				if index1 < len(lGenomeW0)-1:				# if not the last material >> last material does not have changeover Times: BUT has processing times--> adj. needed
 					sMaterial1 = dWcList[gene]['material']	# get family information
 					sMaterial2 = dWcList[lGenomeW0[index1+1]]['material']
@@ -327,23 +129,22 @@ def udf_calcFitness3(lPopulation, dPopulation, dWcList, dMaterialFamily, dTimeMa
 					sCycleTime1 = dMaterialFamily[sMaterial1]['cycleTime']
 					sCycleTime2 = dMaterialFamily[sMaterial2]['cycleTime']
 
-					#print("ID:",iCountIndex1,":", sCycleTime1,sQuantity1,sCycleTime2,sQuantity2, sChangeovertime)
-
+					# take material changeover times if available, otherwise family, otherwise error
 					if (str(sMaterial1)+"-"+str(sMaterial2)) in dMaterialCO:
 						sChangeovertime = dMaterialCO[str(sMaterial1)+"-"+str(sMaterial2)]
 					elif (str(sFamily1)+"-"+str(sFamily2)) in dTimeMatrix:
-						sChangeovertime = dTimeMatrix[str(sFamily1)+"-"+str(sFamily2)] # set changeover time by family
+						sChangeovertime = dTimeMatrix[str(sFamily1)+"-"+str(sFamily2)]
 					else: print("ERROR")
 
 					fFitnessM += (sQuantity1*sCycleTime1)+(sChangeovertime) #calculate overall fitness for every pair
 					
+					# if machineNbr is in the MachineConfig (contains illegal configs), add a penalty term and set illegal flag
 					if (k+1) in dMachineConfig[sFamily1] or (k+1) in dMachineConfig[sFamily2]:
 						iIllegalConfigMultiplier += 50
 						bisIllegal = True
-						#print("E1 Illegal config found", gene,member["genome"][iCountIndex1+1] , k+1, dMachineConfig[sFamily1], dMachineConfig[sFamily2])
 
+				# for last member of the machine
 				else: 
-					#print("Adding last material processing w/o CO: ", gene)
 					sMaterial1 = dWcList[gene]['material']	
 					sQuantity1 = dWcList[gene]['quantity']
 					sCycleTime1 = dMaterialFamily[sMaterial1]['cycleTime']
@@ -353,49 +154,27 @@ def udf_calcFitness3(lPopulation, dPopulation, dWcList, dMaterialFamily, dTimeMa
 					if (k+1) in dMachineConfig[sFamily1]:
 						iIllegalConfigMultiplier += 50
 						bisIllegal = True
-						#print("E2 Illegal config found", gene, k, dMachineConfig[sFamily1])
-				
-
-
 
 				iCountIndex1 += 1
 
-				#print("FitnessM: ", fFitnessM)
 
 			fFitness += fFitnessM
 			fFitnessBalance.append(fFitnessM)
-
 			iPreviousBreak = iNextBreak
-			
-			#print("Fitness All: ", fFitness)
 
+		# add stDev of distribution as penalty term > the more uneven a population is, the higher the penalty
 		fFitness = (fFitness+stat.stdev(fFitnessBalance))*iIllegalConfigMultiplier
 
 		if bisIllegal == True:
 			iIllegalRuns +=1
 			
-			#if glob.bDebug1 == True: print("Illegal Stuff found")
-			#if glob.bDebug1 == True: print("Fitness: ", fFitness, iIllegalConfigMultiplier)
-			#if glob.bDebug1 == True: print("Others: ", member["genome"], member["breaker"])
-
 		else: 
 			if glob.bDebug1 == True: print("--------------------------------------------new member: ", key)
 			if glob.bDebug1 == True: print("Fitness: ", fFitness, iIllegalConfigMultiplier)
 			if glob.bDebug1 == True: print("Others: ", fFitnessBalance)
 
-		#print(fFitnessBalance, stat.stdev(fFitnessBalance))
-		# add stDev of distribution as penalty term
-		
-		#print("Fitness: ", fFitness)
-		#if iIllegalConfigMultiplier >1:
-		#	print(key,iIllegalConfigMultiplier, fFitness ,member["genome"], member["breaker"])
-
 		sMemberName = key # set the memberName based on previous input and iterations
-
-
 		lFitness.append([sMemberName, fFitness]) # create fitness array
-
-
 
 		#set minimum fitness if it is lower than the previous fitness
 		if fFitness < lMinFitness[0]:
@@ -408,16 +187,12 @@ def udf_calcFitness3(lPopulation, dPopulation, dWcList, dMaterialFamily, dTimeMa
 		if fFitness < fMinFitness_run:
 			fMinFitness_run = fFitness
 
-		#create member array with name, fitness and genome
+		# create member array with name, fitness and genome
 		dMembers[sMemberName] = {}
 		dMembers[sMemberName]['fitness'] = fFitness
 		dMembers[sMemberName]['genome'] = member["genome"]
 		dMembers[sMemberName]["illegal"] = iIllegalConfigMultiplier
 
-		#print("-----member runs: ",iMemberRuns)
-
-	if glob.bDebug1 == True: print("runs: ", iTotalRuns, iIllegalRuns, iIllegalRuns/iTotalRuns)
-	fIllegalPerc = iIllegalRuns/iTotalRuns
 	return lFitness, dMembers, lMinFitness, fMinFitness_run, fIllegalPerc
 
 #select best parents from pool
@@ -1128,3 +903,232 @@ def udf_printMachinesFamCMD(lList, lBreaker, memberName, dMaterialFamily, dWcLis
 
 	print("--------------------------------------")
 
+
+
+######################################### RETIRED FUNCTIONS #########################################
+
+# LEGACY_DONOT USE! calculate fitness of a population
+def udf_calcFitness_LEGACY(lPopulation, dWcList, dMaterialFamily, dTimeMatrix, lMinFitness, lPopulation_names):
+	'''
+	LEGACY, DO NOT USE
+	Calculates the Fitness of a given population based on Machine changeover and material processing times.
+	'''
+	# initialize all values
+	sMaterial1 = ''
+	sMaterial2 = ''
+	sFamily1 = ''
+	sFamily2 = ''
+	sQuantity1 = 0
+	sQuantity2 = 0
+	sCycleTime1 = 0
+	sCycleTime2 = 0
+	sChangeovertime = 0
+	fFitness = 0
+	lFitness = []
+	sMemberName = ''
+	dMembers = {}
+
+	for index0,member in enumerate(lPopulation):	# for every member in a population
+
+		fFitness = 0 #reset fitness
+		for index1, gene in enumerate(member):		# for every gene in a member
+			
+			if index1 < len(member)-1:				# if not the last material >> last material does not have changeover Times: BUT has processing times--> adj. needed
+				sMaterial1 = dWcList[gene]['material']	# get family information
+				sMaterial2 = dWcList[member[index1+1]]['material']
+				sQuantity1 = dWcList[gene]['quantity']
+				sQuantity2 = dWcList[member[index1+1]]['quantity']
+				sFamily1 = dMaterialFamily[sMaterial1]['family']
+				sFamily2 = dMaterialFamily[sMaterial2]['family']
+				sCycleTime1 = dMaterialFamily[sMaterial1]['cycleTime']
+				sCycleTime2 = dMaterialFamily[sMaterial2]['cycleTime']
+
+				sChangeovertime = dTimeMatrix[str(sFamily1)+"-"+str(sFamily2)] # set changeover time by family
+
+				fFitness += (sQuantity1*sCycleTime1)+(sQuantity2*sCycleTime2)+(sChangeovertime) # calculate overall fitness for every pair
+
+		sMemberName = lPopulation_names[index0] # set the memberName based on previous input and iterations
+
+
+		lFitness.append([sMemberName, fFitness]) # create fitness array
+
+		# like the appendix, not really needed! 
+		if fFitness <= lMinFitness[0]:
+			lMinFitness[0] = fFitness
+			lMinFitness[1] = sMemberName
+			lMinFitness[2] = member
+
+		# create member array with name, fitness and genome
+		dMembers[sMemberName] = {}
+		dMembers[sMemberName]['Fitness'] = fFitness
+		dMembers[sMemberName]['genome'] = member
+
+	return lFitness, dMembers, lMinFitness
+
+# LEGACY_DONOT USE! calculate fitness of a population
+def udf_calcFitness2_LEGACY(lPopulation, dPopulation, dWcList, dMaterialFamily, dTimeMatrix, lMinFitness, lPopulation_names, iNumberMachines, dMachineConfig):
+	'''
+	LEGACY, DO NOT USE
+	Calculates the Fitness of a given population based on Machine changeover and material processing times.
+	'''
+
+	#initialize all values
+	sMaterial1 = ''
+	sMaterial2 = ''
+	sFamily1 = ''
+	sFamily2 = ''
+	sQuantity1 = 0
+	sQuantity2 = 0
+	sCycleTime1 = 0
+	sCycleTime2 = 0
+	sChangeovertime = 0
+	fFitness = 0
+	lFitness = []
+	sMemberName = ''
+	dMembers = {}
+	fMinFitness_run = 100000000
+	iTotalRuns = 0.0
+	iIllegalRuns = 0.0
+	fIllegalPerc = 0.0
+
+	#+++++++++++++++++++++++++++++++++++++++++++++++++++++++< MEMBER LOOP >+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	for index0, (key,member) in enumerate(dPopulation.items()) :	# for every member in a population
+
+		#print(index0, member["genome"], member["breaker"])
+
+		#+++++++++++++++++++++++++++++++++++++++++++++++++++++++< MACHINE LOOP >+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+		iPreviousBreak = 0
+		fFitness = 0
+		iCountIndex1 = 0
+		fFitnessBalance = []
+		iMemberRuns = 0
+		bisIllegal = False
+
+		#if glob.bDebug1 == True: print("--------------------------------------------new member: ", key)
+
+		#print(">>>> ", index0, member)
+		iTotalRuns +=1
+		iIllegalConfigMultiplier = 1
+
+		for k in range(0, iNumberMachines):
+			
+			if k == iNumberMachines-1:
+				iNextBreak = len(member["genome"])
+
+			else:
+				iNextBreak = member["breaker"][k]
+				#iNextBreak = len(member["genome"])
+
+
+			fFitnessM = 0 #reset fitness
+			
+
+			#print("-----------------------new sub-genome")
+			
+			#print("Sub-Member: ", key, member["genome"][iPreviousBreak:iNextBreak], member["breaker"])
+
+			#+++++++++++++++++++++++++++++++++++++++++++++++++++++++< GENE LOOP >+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+			for index1, gene in enumerate(member["genome"][iPreviousBreak:iNextBreak]):		# for every gene in a member
+				
+					
+
+				iMemberRuns +=1
+				#print(member["genome"][iPreviousBreak:iNextBreak])
+				if index1 < len(member["genome"][iPreviousBreak:iNextBreak])-1:				# if not the last material >> last material does not have changeover Times: BUT has processing times--> adj. needed
+					sMaterial1 = dWcList[gene]['material']	# get family information
+					sMaterial2 = dWcList[member["genome"][iCountIndex1+1]]['material']
+					sQuantity1 = dWcList[gene]['quantity']
+					sQuantity2 = dWcList[member["genome"][iCountIndex1+1]]['quantity']
+					sFamily1 = dMaterialFamily[sMaterial1]['family']
+					sFamily2 = dMaterialFamily[sMaterial2]['family']
+					sCycleTime1 = dMaterialFamily[sMaterial1]['cycleTime']
+					sCycleTime2 = dMaterialFamily[sMaterial2]['cycleTime']
+
+					#print("ID:",iCountIndex1,":", sCycleTime1,sQuantity1,sCycleTime2,sQuantity2, sChangeovertime)
+
+					sChangeovertime = dTimeMatrix[str(sFamily1)+"-"+str(sFamily2)] # set changeover time by family
+
+					fFitnessM += (sQuantity1*sCycleTime1)+(sChangeovertime) #calculate overall fitness for every pair
+					
+					if (k+1) in dMachineConfig[sFamily1] or (k+1) in dMachineConfig[sFamily2]:
+						iIllegalConfigMultiplier = 50
+						bisIllegal = True
+						#print("E1 Illegal config found", gene,member["genome"][iCountIndex1+1] , k+1, dMachineConfig[sFamily1], dMachineConfig[sFamily2])
+
+				else: 
+					#print("Adding last material processing w/o CO: ", gene)
+					sMaterial1 = dWcList[gene]['material']	
+					sQuantity1 = dWcList[gene]['quantity']
+					sCycleTime1 = dMaterialFamily[sMaterial1]['cycleTime']
+					sFamily1 = dMaterialFamily[sMaterial1]['family']
+					fFitnessM += (sQuantity1*sCycleTime1)  
+
+					if (k+1) in dMachineConfig[sFamily1]:
+						iIllegalConfigMultiplier = 50
+						bisIllegal = True
+						#print("E2 Illegal config found", gene, k, dMachineConfig[sFamily1])
+				
+
+
+
+				iCountIndex1 += 1
+
+				#print("FitnessM: ", fFitnessM)
+
+			fFitness += fFitnessM
+			fFitnessBalance.append(fFitnessM)
+
+			iPreviousBreak = iNextBreak
+			
+			#print("Fitness All: ", fFitness)
+
+		fFitness = (fFitness+stat.stdev(fFitnessBalance))*iIllegalConfigMultiplier
+
+		if bisIllegal == True:
+			iIllegalRuns +=1
+			
+			#if glob.bDebug1 == True: print("Illegal Stuff found")
+			#if glob.bDebug1 == True: print("Fitness: ", fFitness, iIllegalConfigMultiplier)
+			#if glob.bDebug1 == True: print("Others: ", member["genome"], member["breaker"])
+
+		else: 
+			if glob.bDebug1 == True: print("--------------------------------------------new member: ", key)
+			if glob.bDebug1 == True: print("Fitness: ", fFitness, iIllegalConfigMultiplier)
+			if glob.bDebug1 == True: print("Others: ", fFitnessBalance)
+
+		#print(fFitnessBalance, stat.stdev(fFitnessBalance))
+		# add stDev of distribution as penalty term
+		
+		#print("Fitness: ", fFitness)
+		#if iIllegalConfigMultiplier >1:
+		#	print(key,iIllegalConfigMultiplier, fFitness ,member["genome"], member["breaker"])
+
+		sMemberName = key # set the memberName based on previous input and iterations
+
+
+		lFitness.append([sMemberName, fFitness]) # create fitness array
+
+
+
+		#set minimum fitness if it is lower than the previous fitness
+		if fFitness < lMinFitness[0]:
+			lMinFitness[0] = fFitness
+			lMinFitness[1] = sMemberName
+			lMinFitness[2] = member["genome"]
+			lMinFitness[3] = member["breaker"]
+			lMinFitness[4] = "Generation: "+str(glob.iGenerationCount-1)
+
+		if fFitness < fMinFitness_run:
+			fMinFitness_run = fFitness
+
+		#create member array with name, fitness and genome
+		dMembers[sMemberName] = {}
+		dMembers[sMemberName]['fitness'] = fFitness
+		dMembers[sMemberName]['genome'] = member["genome"]
+		dMembers[sMemberName]["illegal"] = iIllegalConfigMultiplier
+		#print("-----member runs: ",iMemberRuns)
+
+	if glob.bDebug1 == True: print("runs: ", iTotalRuns, iIllegalRuns, iIllegalRuns/iTotalRuns)
+	fIllegalPerc = iIllegalRuns/iTotalRuns
+	return lFitness, dMembers, lMinFitness, fMinFitness_run, fIllegalPerc

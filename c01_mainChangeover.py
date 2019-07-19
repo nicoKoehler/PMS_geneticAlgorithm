@@ -86,7 +86,7 @@ for index, row in dfFamilies.iterrows():
 	dMaterialFamily[row.Material] = {}
 	dMaterialFamily[row.Material]['family'] = row.materialFamily
 	dMaterialFamily[row.Material]['cycleTime'] = row.cycleTime
-#Create MachineConfig 
+#Create MachineConfig >> ILLEGAL MACHINE CONFIG, machines the family is not allowed on
 for index, row in dfMachineConfig.iterrows():
 	dMachineConfig[row.family] = [int(x) for x in str(row.notOnMachine).split(",")]
 
@@ -176,7 +176,7 @@ while True:
 
 	# calculte fitness for each member in the population
 	fIllegalPerc = 0.0
-	lFitness, dMembers, lMinFitness, fMinFitness_run, fIllegalPerc = gak.udf_calcFitness3(lPopulation, dPopulation, dWcList, dMaterialFamily, dFamilyCO, dMaterialCO, lMinFitness, lPopulation_names, glob.iNumberMachines, dMachineConfig)
+	lFitness, dMembers, lMinFitness, fMinFitness_run, fIllegalPerc = gak.udf_calcFitness3(dPopulation, dWcList, dMaterialFamily, dFamilyCO, dMaterialCO, lMinFitness, dMachineConfig)
 	lFitness_history.append(fMinFitness_run)
 	lIllegal_history.append(fIllegalPerc)
 
