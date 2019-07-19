@@ -142,10 +142,12 @@ for i in range(0,glob.limPopulationSize):
 
 	# legacy sort from when the breaker was generated randomly
 	lBreakGenome.sort()
+	gak.udf_listSortByBreak(lPopulation[i], lBreakGenome, 0)
+
 
 	# populate the Population dictionary
 	dPopulation["member"+str(i)] = {}
-	dPopulation["member"+str(i)]["genome"] = gak.udf_listSortByBreak(lPopulation[i], lBreakGenome, 0)
+	dPopulation["member"+str(i)]["genome"] = lPopulation[i]
 	dPopulation["member"+str(i)]["breaker"] = lBreakGenome	
 
 # write the first population to the history file

@@ -619,8 +619,8 @@ def udf_cloneMutate(lPopulation_new, lPopulation_new_names, dPopulation_new, dMe
 			udf_allowedMutations(lChild2,lChild2Break,dWcList,dMaterialFamily,dMachineConfig)
 
 
-		lChild1 = udf_listSortByBreak(lChild1, lChild1Break, 0)
-		lChild2 = udf_listSortByBreak(lChild2, lChild2Break, 0)
+		udf_listSortByBreak(lChild1, lChild1Break, 0)
+		udf_listSortByBreak(lChild2, lChild2Break, 0)
 
 		glob.iChildCounter += 1
 		lPopulation_offspring.append(lChild1)
@@ -654,6 +654,9 @@ def udf_identifyIllegals(lMemberGenome, lBreaker, dMaterialFamily, dMachineConfi
 
 	RETURNS
 	:return lIllegals:				>list; binary genome of illegal configuration (1)
+
+	SUMMARY
+	Identifies materials on illegal machines in genome
 	'''
 
 	lIllegals = []
@@ -688,6 +691,22 @@ def udf_identifyIllegals(lMemberGenome, lBreaker, dMaterialFamily, dMachineConfi
 
 def udf_listSortByBreak(lList, lBreaker, sSortBy):
 
+	'''
+	INPUT 
+	:param lList:			>list; list to sort, likely the genome
+	:param lBreaker:		>list; seperators for the list
+	:param sSortBy:			>string; argument to sort by
+
+	SIDE EFFECTS:
+	sorts list in breaks by argument
+
+	RETURNS
+	none
+
+	SUMMARY
+	Sort input list in breaker segments by sort argument
+	'''
+
 	iPreviousBreak = 0
 	iNextBreak = 0
 	iCountSorts = 0
@@ -696,7 +715,8 @@ def udf_listSortByBreak(lList, lBreaker, sSortBy):
 	lList = []
 
 	for k in range(0, glob.iNumberMachines):
-			
+		
+		# if last machine, set next break to end of list
 		if k == glob.iNumberMachines-1:
 			iNextBreak = len(lTransferList)
 
@@ -719,7 +739,6 @@ def udf_listSortByBreak(lList, lBreaker, sSortBy):
 		
 		iPreviousBreak = iNextBreak
 
-	return lList
 
 
 def udf_printMachinesCMD(lList, lBreaker, memberName):
