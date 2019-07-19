@@ -195,13 +195,35 @@ def udf_calcFitness3(dPopulation, dWcList, dMaterialFamily, dTimeMatrix, dMateri
 
 	return lFitness, dMembers, lMinFitness, fMinFitness_run, fIllegalPerc
 
-#select best parents from pool
-def udf_selectParentsFromPool(dMembers, limPopulationSize, lFitness_sorted, dPopulation):
+# select best parents from pool
+def udf_selectParentsFromPool(dMembers, lFitness_sorted, dPopulation):
+	
+	'''
+	INPUT:
+	:param dMembers:			>dict; Member array with fitness, genome, name
+	:param lFitness_sorted:		>list; sorted fitness list
+	:param dPopulation:			>dict; active population array
+
+	SIDE EFFECTS:
+	none
+
+	RETURNS:
+	lPopulation_new, lPopulation_new_names, dPopulation_new
+	:return lPopulation_new:		>list; genomes of newly seleted population
+	:return lPopulation_new_name:	>list; parallel array with member names
+	:return dPopulation_new:		>dict; array of new population !may contain duplicates
+
+	SUMMARY:
+	Selects parents from population randomly based on sorted fitness list (distance to worst)
+	!KingPrevails: guarantess that the fittest individual is selected as a parent 
+	'''
+	
 	lPopulation_new = []
 	lPopulation_new_names = []
 	dPopulation_new={}
 	iStartParents = 0
 
+	# guarantees that the fittest member survives
 	if glob.bKingPrevails == True:
 		dPopulation_new[0]={}
 		dPopulation_new[0]["member"]=lFitness_sorted[0][1]
@@ -211,7 +233,7 @@ def udf_selectParentsFromPool(dMembers, limPopulationSize, lFitness_sorted, dPop
 		iStartParents = 1
 
 
-	for i in range(iStartParents, limPopulationSize):	#perform POLPULATIONSIZE number of iterations
+	for i in range(iStartParents, glob.limPopulationSize):	#perform POLPULATIONSIZE number of iterations
 		fRand = random.uniform(0.0, 1.0)	# create random number
 
 		for member in lFitness_sorted:		# if RAND is smaller than the cummulative sum, select the member into the pool of Parents
@@ -223,7 +245,6 @@ def udf_selectParentsFromPool(dMembers, limPopulationSize, lFitness_sorted, dPop
 				dPopulation_new[i]["genome"]=dMembers[member[1]]['genome']
 				dPopulation_new[i]["fitness"]=dMembers[member[1]]['fitness']
 				dPopulation_new[i]["breaker"]=dPopulation[member[1]]["breaker"]
-
 				break
 
 	return lPopulation_new, lPopulation_new_names, dPopulation_new

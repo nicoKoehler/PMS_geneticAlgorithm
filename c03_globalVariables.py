@@ -21,8 +21,8 @@ global iForceAllocation_G
 global bKingPrevails
 
 fMutationRate = 0.12	# best @ 1% 
-limPopulationSize = 10	# has to be multiple of 2
-iBreakGeneration = 5
+limPopulationSize = 100	# has to be multiple of 2
+iBreakGeneration = 20
 iBreakImport = 10000
 iForceAllocation_G = 0.8
 

@@ -197,7 +197,7 @@ while True:
 	dPopulation_new ={}
 
 	# select parents randomly to form new population
-	lPopulation_new, lPopulation_new_names, dPopulation_new = gak.udf_selectParentsFromPool(dMembers, glob.limPopulationSize, lFitness_sorted, dPopulation)
+	lPopulation_new, lPopulation_new_names, dPopulation_new = gak.udf_selectParentsFromPool(dMembers, lFitness_sorted, dPopulation)
 
 
 	# Mating time - execute mating functions and initialize offspring arrays
