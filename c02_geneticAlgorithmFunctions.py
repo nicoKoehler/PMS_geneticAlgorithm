@@ -251,19 +251,36 @@ def udf_selectParentsFromPool(dMembers, lFitness_sorted, dPopulation):
 
 # perform [p]artially [m]apped [x]CrossOver
 def udf_matingPMX(lPopulation_new, iChildCounter, lPopulation_new_names, dPopulation_new, dMembers, fMutationRate):
-	#print(lPopulation_new)
+
+	'''
+	! DOES NOT WORK WITH CURRENT GENOME SETUP ! 
+	INPUT:
+	:param lPopulation_new:			>list; new population (selected parents)
+	:param iChildCounter:			>int; member naming counter
+	:param lPopulation_new_names:	>list; parallel array with member names
+	:param dPopulation_new:			>dict; new population (selected parents)
+	:param dMembers:				>dict; full members array
+	:param fMutationRate:			>float; mutation rate
+
+	SIDE EFFECTS:
+	none
+
+	RETURNS: return lPopulation_offspring, iChildCounter, lPopulation_offspring_names, dPopulation_offspring
+	:return iChildCounter: 			>int; member naming counter
+	:return dPopulation_offspring:	>dict; newly created offspring
+
+	SUMMARY:
+	'''
+
 	lPopulation_offspring = []
 	lPopulation_offspring_names = []
 	sParents= ""
 	dPopulation_offspring={}
 
-	for index_m, mother in enumerate(lPopulation_new[::2]):	#only choose every second member of the array (first is mother, second is father)
-		#print("New Pairing")
-		fRandXO1 = random.randint(0,math.floor(len(mother)/2))			#create two crossover points randomly
+	for index_m, mother in enumerate(lPopulation_new[::2]):	# only choose every second member of the array (first is mother, second is father)
+
+		fRandXO1 = random.randint(0,math.floor(len(mother)/2))			# create two crossover points randomly
 		fRandXO2 = random.randint(math.floor(len(mother)/2),len(mother))
-			
-		#fRandXO1 = 3
-		#fRandXO2 = 6	
 		
 		# since only every 2nd item, index for skipped item needs to be calculated
 		iFather = (index_m)+(index_m)+1
@@ -282,10 +299,7 @@ def udf_matingPMX(lPopulation_new, iChildCounter, lPopulation_new_names, dPopula
 		lChild1Break = []
 		lChild2Break = []
 
-		#print("fitness (Mum, Dad): ", fFitnessMother, fFitnessFather)
-		#print("breakers (Mum, Dad): ", lMotherBreak, lFatherBreak)
-
-		#catch if rands are the same and adjust to be at least 1 apart
+		# catch if rands are the same and adjust to be at least 1 apart
 		if fRandXO1 == fRandXO2 and fRandXO1 > 1:
 			fRandXO1 = fRandXO1 -1
 		elif fRandXO1 == fRandXO2 and fRandXO1 <=1:
@@ -300,29 +314,25 @@ def udf_matingPMX(lPopulation_new, iChildCounter, lPopulation_new_names, dPopula
 
 
 			if index_gM < fRandXO1 or index_gM >= fRandXO2:	# if the index is outside the crossover zone, perform mapping
-				#print(gene, index_gM)
 
-				if gene not in lMapFather:	#check if the gene is in the map, if not: append
+				if gene not in lMapFather:	# check if the gene is in the map, if not: append
 					lChild1.append(gene)
-					#print("gene ",gene," not in map, appending!")
 
 				else: 
-					#print("gene ",gene," in map, starting search")
 					bGeneFound = False
 					iMapIndex = 0
 					sOppParentGene = gene
 
-					#gene search:
+					# gene search:
 					# perform as long as not found:
 					# check what gene maps to in the fathers map
 					# check if new gene is still in fathers map
 					# if not, append. If yes, repeat. 
 
 					while bGeneFound == False:
-						#print(iMapIndex, sOppParentGene)
 						if sOppParentGene == lMapFather[iMapIndex]:	
 							sOppParentGene = lMapMother[iMapIndex]
-							#print("gene map found, new gene: ", sOppParentGene)
+
 							if sOppParentGene not in lMapFather:
 								bGeneFound = True
 								lChild1.append(sOppParentGene)
@@ -332,27 +342,19 @@ def udf_matingPMX(lPopulation_new, iChildCounter, lPopulation_new_names, dPopula
 						else:
 							iMapIndex += 1
 
-						
-
-
 			else:
 				lChild1.append(lPopulation_new[iFather][index_gM])
 
 
-		#same as for mother, but inverse
-
+		# same as for mother, but inverse
 		geneFather = lPopulation_new[iFather]
 
 		for index_gF, gene in enumerate(geneFather):
 
-
 			if index_gF < fRandXO1 or index_gF >= fRandXO2:
-
 
 				if gene not in lMapMother:
 					lChild2.append(gene)
-
-
 				else: 
 					bGeneFound = False
 					iMapIndex = 0
@@ -373,20 +375,12 @@ def udf_matingPMX(lPopulation_new, iChildCounter, lPopulation_new_names, dPopula
 								iMapIndex = 0
 						else:
 							iMapIndex += 1
-
 						
-
-
 			else:
 
 				lChild2.append(mother[index_gF])
 
-
-		################## mating of Breakers
-
-		
-
-
+		# creating new offspring arrays
 		iChildCounter += 1
 		lPopulation_offspring.append(lChild1)
 		lPopulation_offspring_names.append("child"+str(iChildCounter))
@@ -404,36 +398,6 @@ def udf_matingPMX(lPopulation_new, iChildCounter, lPopulation_new_names, dPopula
 
 
 	return lPopulation_offspring, iChildCounter, lPopulation_offspring_names, dPopulation_offspring
-
-# LEGACY simple mating with simple crossover, exchanging whole parts of strings. NOT USED, as this leads to duplication
-def udf_simpleMating(lPopulation_new):
-	lPopulation_offspring=[]
-
-	for index, mother in enumerate(lPopulation_new[::2]):
-		fRandXO1 = random.randint(0,len(mother)/2)
-		fRandXO2 = random.randint(len(mother)/2,len(mother))
-
-		iFather = (index)+(index)+1
-		lChild1 = []
-		lChild2 = []
-
-
-		lChild1.extend(mother[0:fRandXO1])
-		lChild1.extend(lPopulation_new[iFather][fRandXO1:fRandXO2])
-		lChild1.extend(mother[fRandXO2:])
-
-		lChild2.extend(lPopulation_new[iFather][0:fRandXO1])
-		lChild2.extend(mother[fRandXO1:fRandXO2])
-		lChild2.extend(lPopulation_new[iFather][fRandXO2:])
-		print('----------------> ' +str(index))
-		print('Mother: ', mother)
-		print('Father: ', lPopulation_new[iFather])
-		print("Child1: ", lChild1)
-		print("Child2: ", lChild2)
-
-		lPopulation_offspring.append(lChild1)
-		lPopulation_offspring.append(lChild2)
-
 
 #mutation by swaping
 def udf_mutateSwap(fMutationRate,lPopulation_offspring, dPopulation_offspring):
@@ -1153,3 +1117,33 @@ def udf_calcFitness2_LEGACY(lPopulation, dPopulation, dWcList, dMaterialFamily, 
 	if glob.bDebug1 == True: print("runs: ", iTotalRuns, iIllegalRuns, iIllegalRuns/iTotalRuns)
 	fIllegalPerc = iIllegalRuns/iTotalRuns
 	return lFitness, dMembers, lMinFitness, fMinFitness_run, fIllegalPerc
+
+# LEGACY simple mating with simple crossover, exchanging whole parts of strings. NOT USED, as this leads to duplication
+def udf_simpleMating(lPopulation_new):
+	lPopulation_offspring=[]
+
+	for index, mother in enumerate(lPopulation_new[::2]):
+		fRandXO1 = random.randint(0,len(mother)/2)
+		fRandXO2 = random.randint(len(mother)/2,len(mother))
+
+		iFather = (index)+(index)+1
+		lChild1 = []
+		lChild2 = []
+
+
+		lChild1.extend(mother[0:fRandXO1])
+		lChild1.extend(lPopulation_new[iFather][fRandXO1:fRandXO2])
+		lChild1.extend(mother[fRandXO2:])
+
+		lChild2.extend(lPopulation_new[iFather][0:fRandXO1])
+		lChild2.extend(mother[fRandXO1:fRandXO2])
+		lChild2.extend(lPopulation_new[iFather][fRandXO2:])
+		print('----------------> ' +str(index))
+		print('Mother: ', mother)
+		print('Father: ', lPopulation_new[iFather])
+		print("Child1: ", lChild1)
+		print("Child2: ", lChild2)
+
+		lPopulation_offspring.append(lChild1)
+		lPopulation_offspring.append(lChild2)
+
