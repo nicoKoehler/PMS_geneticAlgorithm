@@ -641,9 +641,23 @@ def udf_cloneMutate(lPopulation_new, lPopulation_new_names, dPopulation_new, dMe
 
 def udf_identifyIllegals(lMemberGenome, lBreaker, dMaterialFamily, dMachineConfig, dWcList):
 
+	'''
+	INPUT
+	:param lMemberGenome:			>list; member genome
+	:param lBreaker:				>list; breaker of member
+	:param dMaterialFamily:			>dict; material family mapping
+	:param dMachineConfig:			>dict; illegal machine config
+	:param dWcList:					>dict; orders and materials
+
+	SIDE EFFECTS
+	none
+
+	RETURNS
+	:return lIllegals:				>list; binary genome of illegal configuration (1)
+	'''
+
 	lIllegals = []
 	iPreviousBreak = 0
-
 
 	for k in range(0, glob.iNumberMachines):
 
@@ -652,9 +666,7 @@ def udf_identifyIllegals(lMemberGenome, lBreaker, dMaterialFamily, dMachineConfi
 
 		else:
 			iNextBreak = lBreaker[k]
-				#iNextBreak = len(member["genome"])
-		
-		#print("Breakers: ", lBreaker, iPreviousBreak, iNextBreak)
+
 		for i in lMemberGenome[iPreviousBreak:iNextBreak]:
 
 			if i == 0:
@@ -670,7 +682,6 @@ def udf_identifyIllegals(lMemberGenome, lBreaker, dMaterialFamily, dMachineConfi
 			else: lIllegals.append(0)
 
 		iPreviousBreak = iNextBreak
-
 
 	return lIllegals
 
