@@ -12,6 +12,11 @@ filePopulationHistory = open("C:\\Users\\u374441\\Danfoss\\PS WF - MSA - Documen
 
 #sort array by fitness
 def udf_sortByFitness(lFitness):
+	''' sorts a povided fitness array by fitness for each member. 
+	It further assigns a selection probability based on the distance to the worst member.
+	Further it calculates a running sum and sorts accordingly.
+	E.g. the further a member is away from the population's worst the higher the chances of later selection will be.
+	RETURNS: sorted fitness array with columns [selectionProb_cumSum],[member]  '''
 
 	dfFitness = pd.DataFrame(lFitness, columns=['member','fitness']) #load member and calc. fitness into dataFrame
 	dfFitness['distanceToWorst'] = dfFitness['fitness'] - (np.nanmax(dfFitness['fitness'].values)+1) # calculate distance to worst fitness
