@@ -30,7 +30,7 @@ iGenerationCount = 0
 iPastAverage = 5
 iNumberMachines = 4
 iDeletionProb = 0.5
-iCataclysmicProb = 0.01
+iCataclysmicProb = 0.05
 iChildCounter = limPopulationSize
 
 bKingPrevails = True

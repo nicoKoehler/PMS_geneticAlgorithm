@@ -158,6 +158,7 @@ for i,w in enumerate(lPopulation):
 ######################################### 3 GA Algorithm ######################################### 
 # ! Arrays ending on "_names" are parallel arrays to track member names
 # iterate until break point reached (see below)
+iBreakLoop = glob.iBreakGeneration
 while True:
 
 	glob.iGenerationCount += 1
@@ -172,7 +173,8 @@ while True:
 
 		dPopulation = gak.udf_cataclysm(dPopulation, glob.lGenome_0)
 		# Add runs to the overall counter after cataclysm
-		glob.iBreakGeneration += 100
+		glob.iCataclysmicProb = glob.iCataclysmicProb/2
+		iBreakLoop += glob.iBreakGeneration
 
 	# calculte fitness for each member in the population
 	fIllegalPerc = 0.0
@@ -240,7 +242,7 @@ while True:
 		break
 
 	# break the while loop if generation limit is reached
-	if glob.iGenerationCount == glob.iBreakGeneration:
+	if glob.iGenerationCount == iBreakLoop:
 		break
 
 

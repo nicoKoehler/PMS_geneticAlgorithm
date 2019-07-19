@@ -399,7 +399,7 @@ def udf_matingPMX(lPopulation_new, iChildCounter, lPopulation_new_names, dPopula
 
 	return lPopulation_offspring, iChildCounter, lPopulation_offspring_names, dPopulation_offspring
 
-#mutation by swaping
+# mutation by swaping
 def udf_mutateSwap(fMutationRate,lPopulation_offspring, dPopulation_offspring):
 	lchild_mutate = []
 	lPopulation_offspringMutated=[]
@@ -433,32 +433,42 @@ def udf_mutateRegen(lList,iGeneLen):
 	lchild_mutate = []
 	for i,item in enumerate(lList):		#iterate over all children
 		if random.uniform(0.0, 1.0) < glob.fMutationRate/4:		#calculate random number; if lower than mutation rate, MUTATE
-		#	print("MUTATING Breakers")
-
 			iNewBreak = random.randint(1,iGeneLen)
 
 			while iNewBreak in lList:
 				 iNewBreak = random.randint(1,iGeneLen)
-				 #print("newBreaker already in list, searched new")
 
-			#print(lList)
 			lList[i] = iNewBreak
-			#print(lList)
 
 	return	lList
 
-
+# introduce cataclysm to kill off parts of the population
 def udf_cataclysm(dPopulation,lGenome):
 
-	iRunIndex = 0
+	'''
+	INPUT:
+	:param dPopulation:		>dict; full population
+	:param lGenome:			>list; original genome
+
+	SIDE EFFECTS:
+	none
+
+	RETURNS:
+	:return dPopulation:	>dict; full population
+
+	SUMMARY:
+	Destroys member and creates a new one
+	'''
+
 	for key, member in dPopulation.items():
 
-		if random.uniform(0.0,1.0) < glob.iDeletionProb:
+		if random.uniform(0.0,1.0) < glob.iDeletionProb:	# >> make this based on fitness!
 			glob.iChildCounter +=1
 			sNewKey = "member"+str(glob.iChildCounter)
-			dPopulation[sNewKey] = dPopulation.pop(key)
+			dPopulation.pop(key)
+			dPopulation[sNewKey] = {}
 			dPopulation[sNewKey]["genome"], dPopulation[sNewKey]["breaker"] = udf_makeNewMember(lGenome)
-			
+
 
 	return dPopulation
 
