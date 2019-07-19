@@ -741,12 +741,28 @@ def udf_listSortByBreak(lList, lBreaker, sSortBy):
 
 
 
-def udf_printMachinesCMD(lList, lBreaker, memberName):
+def udf_printMachinesCMD(lList, lBreaker, sMemberName):
+
+	'''
+	INPUT
+	:param lList: 			>list; genome of member
+	:param lBreaker:		>list; breakers of member
+	:param sMemberName:		>string; name/id of member
+
+	SIDE EFFECTS
+	print machines in terminal
+
+	RETURNS
+	none
+
+	SUMMARY
+	prints genome into visually seperated lines in the terminal
+	'''
+
 	iPreviousBreak = 0
 	iNextBreak = 0
 
-	print(" #################################### PRINTING MACHINES:",memberName,"####################################")
-
+	print(" #################################### PRINTING MACHINES:",sMemberName,"####################################")
 
 	for k in range(0, glob.iNumberMachines):
 		print("Machine #",str(k+1),":   ",end="")
@@ -769,6 +785,23 @@ def udf_printMachinesCMD(lList, lBreaker, memberName):
 
 
 def udf_printMachinesFamCMD(lList, lBreaker, memberName, dMaterialFamily, dWcList):
+	
+	'''
+	INPUT
+	:param lList: 			>list; genome of member
+	:param lBreaker:		>list; breakers of member
+	:param sMemberName:		>string; name/id of member
+
+	SIDE EFFECTS
+	print machines in terminal
+
+	RETURNS
+	none
+
+	SUMMARY
+	prints genome into visually seperated lines in the terminal
+	'''
+	
 	iPreviousBreak = 0
 	iNextBreak = 0
 
