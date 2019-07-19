@@ -474,27 +474,37 @@ def udf_cataclysm(dPopulation,lGenome):
 
 
 def udf_makeNewMember(lGenome_0):
+	'''
+	INPUT:
+	:param lGenome_0:	>list; original genome without fill
 
+	SIDE EFFECTS:
+	none
+
+	RETURNS:
+	:return lNewMember:		>list; new member genome
+	:return lBreakGenome:	>list; cutoff points for machines
+
+	SUMMARY:
+	Creates new member and machine breaks based on original genome
+	'''
 	
-	#print(i)
 	lNewMember = []
 	lBreakGenome = []
-	#fill member randomly based on available genes - reduce available genes
-	
+
+	# fill member randomly based on available genes - reduce available genes
 	lEmptyAppend = [i*0 for i in range(0, (glob.iNumberMachines-1)*len(lGenome_0))]
 
 	lGenome = lGenome_0+lEmptyAppend
 	lGenesAvailable = lGenome.copy()
 
-	#fill member randomly based on available genes - reduce available genes
+	# fill member randomly based on available genes - reduce available genes
 	for gene in range(0, len(lGenome)):
 		sOrder= random.choice(lGenesAvailable)
 		lNewMember.append(sOrder)
 		lGenesAvailable.remove(sOrder)
 
-
 	for j in range(1, glob.iNumberMachines):
-		
 		iRandBreaker = (j*len(lGenome_0))
 		lBreakGenome.append(iRandBreaker)
 
