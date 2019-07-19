@@ -488,7 +488,7 @@ def udf_makeNewMember(lGenome_0):
 	SUMMARY:
 	Creates new member and machine breaks based on original genome
 	'''
-	
+
 	lNewMember = []
 	lBreakGenome = []
 
@@ -514,42 +514,47 @@ def udf_makeNewMember(lGenome_0):
 
 
 def udf_cloneMutate(lPopulation_new, lPopulation_new_names, dPopulation_new, dMembers, dMaterialFamily, dMachineConfig, dWcList, lGenome):
-	#print(lPopulation_new)
+
+	'''
+	INPUT: 
+	:param dPopulation_new:			>dict; list of selected parents
+	:param dMembers: 				>dict; members with fitness
+	:param dMaterialFamily:			>dict; material Family mapping
+	:param dMachineConfig:			>dict; illegal machine configurations
+	:param dWCList:					>dict; orders and materials
+	:paran lGenome:					>list; original genome
+
+	SIDE EFFECTS:
+	none
+	
+	RETURNS:
+	:return dPopulation_offspring:	>dict; offspring population
+
+	SUMMARY:
+	> clone parents into children based on fitness based random selection
+	> check for legality of children
+	> determine allowed positions array
+	> mutate for allowed positions radomly
+	'''
+
 	lPopulation_offspring = []
 	lPopulation_offspring_names = []
 	sParents= ""
 	dPopulation_offspring={}
 
 	lLoopList = [x["genome"] for i,x in dPopulation_new.items()]
-	#print(lLoopList)
+
 
 	for index_m, mother in enumerate(lLoopList[::2]):	#only choose every second member of the array (first is mother, second is father)
-		#print("New Pairing")
-		fRandXO1 = random.randint(0,math.floor(len(mother)/2))			#create two crossover points randomly
-		fRandXO2 = random.randint(math.floor(len(mother)/2),len(mother))
-	
-		#fRandXO1 = 3
-		#fRandXO2 = 6	
-		
+
 		# since only every 2nd item, index for skipped item needs to be calculated
 		iFather = (index_m)+(index_m)+1
 		iMother = (index_m)+(index_m)
 		lChild1 = []
 		lChild2 = []
 		geneFather = dPopulation_new[iFather]["genome"][:]
-		#sParents= "("+lPopulation_new_names[iMother] + ","+lPopulation_new_names[iFather]+")"
 		fFitnessMother = dMembers[dPopulation_new[iMother]["member"]]["fitness"]
 		fFitnessFather = dMembers[dPopulation_new[iFather]["member"]]["fitness"]
-
-
-		#print("fitness (Mum, Dad): ", fFitnessMother, fFitnessFather)
-		#print("breakers (Mum, Dad): ", lMotherBreak, lFatherBreak)
-
-		#catch if rands are the same and adjust to be at least 1 apart
-		if fRandXO1 == fRandXO2 and fRandXO1 > 1:
-			fRandXO1 = fRandXO1 -1
-		elif fRandXO1 == fRandXO2 and fRandXO1 <=1:
-			fRandXO2 = fRandXO2 + 1
 
 		lGenome_dom = []
 		lGenome_sub = []
@@ -562,10 +567,6 @@ def udf_cloneMutate(lPopulation_new, lPopulation_new_names, dPopulation_new, dMe
 		lBreak_sub = []
 		bDominantMother = "" 
 
-		#print("MOTHER: ", mother, " | ", lMotherBreak)
-		#print("FATHER: ", geneFather, " | ", lFatherBreak)
-
-
 		if fFitnessMother > fFitnessFather:
 			bDominantMother = "mother"
 			lGenome_dom = mother[:]
@@ -574,8 +575,6 @@ def udf_cloneMutate(lPopulation_new, lPopulation_new_names, dPopulation_new, dMe
 			lBreak_sub = lFatherBreak[:]
 			fCloneDom_cut = (fFitnessMother)/(fFitnessMother+fFitnessFather)
 
-			#print("Mother is Dominant, XO: ", fXObreaker_cut)
-
 		elif fFitnessMother < fFitnessFather:
 			bDominantMother = "father"
 			lGenome_dom = geneFather[:]
@@ -583,7 +582,7 @@ def udf_cloneMutate(lPopulation_new, lPopulation_new_names, dPopulation_new, dMe
 			lBreak_dom = lFatherBreak[:]
 			lBreak_sub = lMotherBreak[:]
 			fCloneDom_cut = (fFitnessFather)/(fFitnessFather+fFitnessMother)
-			#print("Father is Dominant, XO: ", fXObreaker_cut)
+
 		else: 
 			bDominantMother = "none"
 			fCloneDom_cut = 0.5
@@ -608,159 +607,20 @@ def udf_cloneMutate(lPopulation_new, lPopulation_new_names, dPopulation_new, dMe
 		else: 
 			lChild2 = lGenome_sub[:]
 			lChild2Break = lBreak_sub[:]
-		#print("MOTHER: ", mother)
-		#print("Child1: ", lChild1)
 
 		lChild1Break.sort()
 		lChild2Break.sort()
-
-		#print("Child1_UM: ", lChild1, " | ", lChild1Break)
-		#print("Child2_UM: ", lChild2, " | ", lChild2Break)
-		#print("Child1_U_Ill: ", udf_identifyIllegals(lChild1, lChild1Break, dMaterialFamily, dMachineConfig, dWcList))
-		#print("------------------CHILD", index_m,": ",lChild1)
-		#print("Genome BEFORE: ", lChild1)
-		#print("Illegals BEFORE: ", udf_identifyIllegals(lChild1, lChild1Break, dMaterialFamily, dMachineConfig, dWcList))
-
 
 
 		#>>>>>>>>>>>>>>>>>>>>>>> ENSURE LEGAL SOLUTIONS <<<<<<<<<<<<<<<<<<<<<<<<<<<
 		if glob.bCorrectChild == True:
 			
-
-			for iC1, gene in enumerate(lChild1):	# iterate over mother genes for the first child
-
-				iForceAllocation = 0
-				lAllowedMachines = []
-
-				if lChild1[iC1] == 0:
-					continue
-
-				sMaterial1 = dWcList[lChild1[iC1]]['material']	# get family information
-				sFamily1 = dMaterialFamily[sMaterial1]['family']
-				#print(iC1, lChild1[iC1], lChild1Break ,dMachineConfig[sFamily1])
-
-				iMyMachine = min([i  if iC1 < k else len(lChild1Break) for i,k in enumerate(lChild1Break)])+1 #I love list comprehension!
-
-				for k in range(1, glob.iNumberMachines+1):
-					if k not in dMachineConfig[sFamily1]:
-						lAllowedMachines.append(k)
-
-				#print("Child1 Current Machine, Allowed: ", iMyMachine, lAllowedMachines)
-
-				lAllowedPositions = []
-				iUpperBound = 0
-				iLowerBound = 0
-
-				for i,m in enumerate(lAllowedMachines):
-					#set for First Machine
-					if m == 1:
-						iLowerBound = 0
-						iUpperBound = lChild1Break[m-1]
-					elif m==glob.iNumberMachines:
-						iLowerBound = lChild1Break[m-2]
-						iUpperBound = len(lChild1)
-
-					else:
-						iLowerBound = lChild1Break[m-2]
-						iUpperBound = lChild1Break[m-1]
-
-
-					lAllowedPositions.extend(list(range(iLowerBound, iUpperBound)))
-					#set for last Machine
-
-
-
-				#print("ALLOWED POSITIONS: ", lAllowedPositions)
-				if iMyMachine not in lAllowedMachines:
-					iForceAllocation = glob.iForceAllocation_G
-				#print(glob.fMutationRate)
-				if random.uniform(0.0, 1.0) < max(glob.fMutationRate, iForceAllocation):
-					fRandXO2 = random.choice(lAllowedPositions)
-					lChild1[iC1], lChild1[fRandXO2] = lChild1[fRandXO2], lChild1[iC1]
-
-
-			for iC2, gene2 in enumerate(lChild2):	# iterate over mother genes for the first child
-
-				iForceAllocation = 0
-				lAllowedMachines = []
-
-
-				if lChild1[iC2] == 0:
-					continue
-
-				sMaterial1 = dWcList[lChild1[iC2]]['material']	# get family information
-				sFamily1 = dMaterialFamily[sMaterial1]['family']
-				#print(iC1, lChild1[iC1], lChild1Break ,dMachineConfig[sFamily1])
-
-				iMyMachine = min([i  if iC2 < k else len(lChild2Break) for i,k in enumerate(lChild2Break)])+1 #I love list comprehension!
-
-				for k in range(1, glob.iNumberMachines+1):
-					if k not in dMachineConfig[sFamily1]:
-						lAllowedMachines.append(k)
-
-				#print("Child1 Current Machine, Allowed: ", iMyMachine, lAllowedMachines)
-
-				lAllowedPositions = []
-				iUpperBound = 0
-				iLowerBound = 0
-
-				for i,m in enumerate(lAllowedMachines):
-					#set for First Machine
-					if m == 1:
-						iLowerBound = 0
-						iUpperBound = lChild2Break[m-1]
-					elif m==glob.iNumberMachines:
-						iLowerBound = lChild2Break[m-2]
-						iUpperBound = len(lChild2)
-
-					else:
-						iLowerBound = lChild2Break[m-2]
-						iUpperBound = lChild2Break[m-1]
-
-
-					lAllowedPositions.extend(list(range(iLowerBound, iUpperBound)))
-					#set for last Machine
-
-				#print("ALLOWED POSITIONS: ", lAllowedPositions)
-				if iMyMachine not in lAllowedMachines:
-					iForceAllocation = 1
-
-				#print(glob.fMutationRate)
-
-				if random.uniform(0.0, 1.0) < max(glob.fMutationRate, iForceAllocation):
-					fRandXO2 = random.choice(lAllowedPositions)
-					lChild2[iC1], lChild2[fRandXO2] = lChild2[fRandXO2], lChild2[iC1]
-
-
-
-		#print("Parent breakers (Mum, Dad): ", lMotherBreak, lFatherBreak)
-		#print("Children breakers (1,2): ", lChild1Break, lChild2Break)
-		
-		lChild1Check = []
-		lChild1Check = udf_identifyIllegals(lChild1, lChild1Break, dMaterialFamily, dMachineConfig, dWcList)
-		#print("Genome AFTER: ", lChild1)
-		#print("Illegals AFTER: ", udf_identifyIllegals(lChild1, lChild1Break, dMaterialFamily, dMachineConfig, dWcList))
-
-		lChild2Check = []
-		#lChild2Check = udf_identifyIllegals(lChild2, lChild2Break, dMaterialFamily, dMachineConfig, dWcList)
-		if glob.bDebug1 == True: print("Child 1 Check: ","child"+str(glob.iChildCounter)," :: " ,lChild1Check)
-
-		#print(lChild1Check)
-
-		#print("Child1_M: ", lChild1, " | ", lChild1Break)
-		#print("Child2_M: ", lChild2, " | ", lChild2Break)
-		##print("Child1_M_Ill: ", udf_identifyIllegals(lChild1, lChild1Break, dMaterialFamily, dMachineConfig, dWcList))
+			udf_allowedMutations(lChild1,lChild1Break,dWcList,dMaterialFamily,dMachineConfig)
+			udf_allowedMutations(lChild2,lChild2Break,dWcList,dMaterialFamily,dMachineConfig)
 
 
 		lChild1 = udf_listSortByBreak(lChild1, lChild1Break, 0)
 		lChild2 = udf_listSortByBreak(lChild2, lChild2Break, 0)
-
-		#print("Child1_S: ", lChild1, " | ", lChild1Break)
-		#print("Child2_S: ", lChild2, " | ", lChild2Break)
-		#print("Child1_S_Ill: ", udf_identifyIllegals(lChild1, lChild1Break, dMaterialFamily, dMachineConfig, dWcList))
-
-
-		#print("MOTHER: ", mother)	
 
 		glob.iChildCounter += 1
 		lPopulation_offspring.append(lChild1)
@@ -775,8 +635,6 @@ def udf_cloneMutate(lPopulation_new, lPopulation_new_names, dPopulation_new, dMe
 		dPopulation_offspring["child"+str(glob.iChildCounter)]={}
 		dPopulation_offspring["child"+str(glob.iChildCounter)]["genome"]=lChild2
 		dPopulation_offspring["child"+str(glob.iChildCounter)]["breaker"]=lChild2Break
-
-
 
 	return lPopulation_offspring, lPopulation_offspring_names, dPopulation_offspring
 
@@ -907,6 +765,75 @@ def udf_printMachinesFamCMD(lList, lBreaker, memberName, dMaterialFamily, dWcLis
 		iPreviousBreak = iNextBreak
 
 	print("--------------------------------------")
+
+
+
+
+
+def udf_allowedMutations (lChild, lChildBreak, dWcList, dMaterialFamily, dMachineConfig):
+
+	'''
+	INPUT:
+	:param lChild: 			>list; child genome
+	:param lChildbreak:		>list; machine breaks for child
+	:param dWcList:			>dict; orders and materials
+	:param dMaterialFamily:	>dict; material family mapping
+	:param dMachineConfig:	>dict; illegal machine configs
+
+	SIDE EFFECTS:
+	mutates :lChild based on allowed positions
+
+	RETURNS:
+	none
+
+
+	'''
+
+	for iC1, gene in enumerate(lChild):	# iterate over mother genes for the first child
+				
+		lAllowedMachines = []
+		iForceAllocation = 0
+
+		if lChild[iC1] == 0:
+			continue
+
+		sMaterial1 = dWcList[lChild[iC1]]['material']	# get family information
+		sFamily1 = dMaterialFamily[sMaterial1]['family']
+		iMyMachine = min([i  if iC1 < k else len(lChildBreak) for i,k in enumerate(lChildBreak)])+1 # I love list comprehension!
+		
+		# create allowed machines
+		for k in range(1, glob.iNumberMachines+1):
+			if k not in dMachineConfig[sFamily1]:
+				lAllowedMachines.append(k)
+
+		lAllowedPositions = []
+		iUpperBound = 0
+		iLowerBound = 0
+
+		for index,machine in enumerate(lAllowedMachines):
+			# set for First Machine
+			if machine == 1:
+				iLowerBound = 0
+				iUpperBound = lChildBreak[machine-1]
+			elif machine == glob.iNumberMachines:
+				iLowerBound = lChildBreak[machine-2]
+				iUpperBound = len(lChild)
+
+			else:
+				iLowerBound = lChildBreak[machine-2]
+				iUpperBound = lChildBreak[machine-1]
+
+			# add to allowed positions
+			lAllowedPositions.extend(list(range(iLowerBound, iUpperBound)))
+			
+		if iMyMachine not in lAllowedMachines:
+			iForceAllocation = glob.iForceAllocation_G
+
+		if random.uniform(0.0, 1.0) < max(glob.fMutationRate, iForceAllocation):
+			fRandXO2 = random.choice(lAllowedPositions)
+			lChild[iC1], lChild[fRandXO2] = lChild[fRandXO2], lChild[iC1]
+
+
 
 
 
