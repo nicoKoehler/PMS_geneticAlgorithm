@@ -116,33 +116,15 @@ lGenome = glob.lGenome_0+lEmptyAppend
 
 # from the filled Genome, create n = limPopulationSize initial parents
 for i in range(0,glob.limPopulationSize):
-	lPopulation.append([])
-	lGenesAvailable = lGenome.copy()
 
-	lPopulation_names.append("member"+str(i))
-	lBreakGenome = []
-	lCOlookup = []
-
-	# fill member randomly based on available genes - reduce available genes
-	for gene in range(0, len(lGenome)):
-		sOrder= random.choice(lGenesAvailable)
-		lPopulation[i].append(sOrder)
-		lGenesAvailable.remove(sOrder)
-
-	# craete breaking points / machine seperators based on the lenght of a single machine (length of the origin genome)
-	for j in range(1, glob.iNumberMachines):
-		iRandBreaker = (j*len(glob.lGenome_0))
-		lBreakGenome.append(iRandBreaker)
-
-	# legacy sort from when the breaker was generated randomly
-	lBreakGenome.sort()
-	gak.udf_listSortByBreak(lPopulation[i], lBreakGenome, 0)
+	lNewMember, lNewBreaker = gak.udf_makeNewMember(glob.lGenome_0)
+	gak.udf_listSortByBreak(lNewMember, lNewBreaker, 0)
 
 
 	# populate the Population dictionary
 	dPopulation["member"+str(i)] = {}
-	dPopulation["member"+str(i)]["genome"] = lPopulation[i]
-	dPopulation["member"+str(i)]["breaker"] = lBreakGenome	
+	dPopulation["member"+str(i)]["genome"] = lNewMember
+	dPopulation["member"+str(i)]["breaker"] = lNewBreaker	
 
 # write the first population to the history file
 filePopulationHistory.write("#"+str(iGenerationCount)+".1------------------------ Original Population ------------------------"+"\n")
