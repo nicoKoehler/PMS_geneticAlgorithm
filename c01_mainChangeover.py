@@ -27,6 +27,7 @@ import datetime
 
 
 fMinFitness = 100000000
+iGenerationCount = 0
 lMinFitness = [10000000, 'START', [],[],""]
 lMinFitness_history = [100000000]
 lFitness_history=[]
@@ -152,7 +153,7 @@ for i in range(0,glob.limPopulationSize):
 	dPopulation["member"+str(i)]["breaker"] = lBreakGenome	
 
 # write the first population to the history file
-filePopulationHistory.write("#"+str(glob.iGenerationCount)+".1------------------------ Original Population ------------------------"+"\n")
+filePopulationHistory.write("#"+str(iGenerationCount)+".1------------------------ Original Population ------------------------"+"\n")
 for i,w in enumerate(lPopulation):
 	filePopulationHistory.write(lPopulation_names[i]+": "+str(w)+"\n")
 
@@ -162,17 +163,21 @@ for i,w in enumerate(lPopulation):
 # ! Arrays ending on "_names" are parallel arrays to track member names
 # iterate until break point reached (see below)
 iBreakLoop = glob.iBreakGeneration
-while True:
 
-	glob.iGenerationCount += 1
-	# print("--------------------------------- GENERATION: "+str(glob.iGenerationCount)+"---------------------------------")
+
+while iGenerationCount < iBreakLoop:
+
+	fIllegalPerc = 0.0
+
+	iGenerationCount += 1
+	print("--------------------------------- GENERATION: "+str(iGenerationCount)+"---------------------------------")
 
 
 	# execute function to calculate fitness of population
 	# determine randomly if a cataclysm should occur; cataclsym = "kills off" the population and fills it with newly created one
 	if random.uniform(0.0, 1.0) < glob.iCataclysmicProb and glob.bCataclysm == True:
 
-		# print("<<<<<<<<<<<<<<<<<<< CATACLYSM TIME <<<<<<<<<<<<<<<<<<<")
+		print("<<<<<<<<<<<<<<<<<<< CATACLYSM TIME <<<<<<<<<<<<<<<<<<<")
 
 		dPopulation = gak.udf_cataclysm(dPopulation, glob.lGenome_0)
 		# Add runs to the overall counter after cataclysm
@@ -180,8 +185,8 @@ while True:
 		iBreakLoop += glob.iBreakGeneration
 
 	# calculte fitness for each member in the population
-	fIllegalPerc = 0.0
-	lFitness, dMembers, lMinFitness, fMinFitness_run, fIllegalPerc = gak.udf_calcFitness3(dPopulation, dWcList, dMaterialFamily, dFamilyCO, dMaterialCO, lMinFitness, dMachineConfig)
+	
+	lFitness, dMembers, lMinFitness, fMinFitness_run, fIllegalPerc = gak.udf_calcFitness3(dPopulation, dWcList, dMaterialFamily, dFamilyCO, dMaterialCO, lMinFitness, dMachineConfig, iGenerationCount)
 	lFitness_history.append(fMinFitness_run)
 	lIllegal_history.append(fIllegalPerc)
 
@@ -244,9 +249,6 @@ while True:
 	if sum(lMinFitness_history[(iAvgStart):(len(lMinFitness_history))]) < fMinFitness:
 		break
 
-	# break the while loop if generation limit is reached
-	if glob.iGenerationCount == iBreakLoop:
-		break
 
 
 # close file
@@ -271,7 +273,7 @@ gak.udf_printMachinesFamCMD(lMinFitness[2], lMinFitness[3], lMinFitness[1], dMat
 ######################################### 4 Graphing it #########################################
 # set min and max for the y axes
 y1Min = math.floor(min(lFitness_history)/1000)*1000
-y1Max = math.ceil(min(lFitness_history)/1000)*1100
+y1Max = math.ceil(min(lFitness_history)/1000)*2000
 y2Min = math.floor(min(lIllegal_history))-0.1
 y2Max = math.ceil(min(lIllegal_history))+0.1
 

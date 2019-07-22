@@ -3,7 +3,6 @@
 global fMutationRate 
 global limPopulationSize 
 global iChildCounter 
-global iGenerationCount 
 global iBreakGeneration 
 global iPastAverage 
 global iNumberMachines
@@ -21,16 +20,15 @@ global iForceAllocation_G
 global bKingPrevails
 
 fMutationRate = 0.12	# best @ 1% 
-limPopulationSize = 500	# has to be multiple of 2
-iBreakGeneration = 10
+limPopulationSize = 250	# has to be multiple of 2
+iBreakGeneration = 40
 iBreakImport = 10000
-iForceAllocation_G = 0.8
+iForceAllocation_G = 0.5
 
-iGenerationCount = 0
 iPastAverage = 5
 iNumberMachines = 4
 iDeletionProb = 0.5
-iCataclysmicProb = 0.04
+iCataclysmicProb = 0.1
 iChildCounter = limPopulationSize
 
 bKingPrevails = True

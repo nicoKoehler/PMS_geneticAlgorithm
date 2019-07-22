@@ -34,7 +34,7 @@ def udf_sortByFitness(lFitness):
 
 
 # ACTIVE calculate fitness of a population
-def udf_calcFitness3(dPopulation, dWcList, dMaterialFamily, dTimeMatrix, dMaterialCO,lMinFitness, dMachineConfig):
+def udf_calcFitness3(dPopulation, dWcList, dMaterialFamily, dTimeMatrix, dMaterialCO,lMinFitness, dMachineConfig, iGenerationCount):
 	
 	'''
 	INPUT:
@@ -172,7 +172,7 @@ def udf_calcFitness3(dPopulation, dWcList, dMaterialFamily, dTimeMatrix, dMateri
 			fFitness += fFitnessM
 			fFitnessBalance.append(fFitnessM)
 			iPreviousBreak = iNextBreak
-			
+
 
 		# add stDev of distribution as penalty term > the more uneven a population is, the higher the penalty
 		#print("Fitness w/o penalties: \t", str(fFitness))
@@ -183,13 +183,10 @@ def udf_calcFitness3(dPopulation, dWcList, dMaterialFamily, dTimeMatrix, dMateri
 
 
 
-		if bisIllegal == True:
+		if (bisIllegal):
 			iIllegalRuns +=1
+
 			
-		else: 
-			if glob.bDebug1 == True: print("--------------------------------------------new member: ", key)
-			if glob.bDebug1 == True: print("Fitness: ", fFitness, iIllegalConfigMultiplier)
-			if glob.bDebug1 == True: print("Others: ", fFitnessBalance)
 
 		sMemberName = key # set the memberName based on previous input and iterations
 		lFitness.append([sMemberName, fFitness]) # create fitness array
@@ -200,7 +197,7 @@ def udf_calcFitness3(dPopulation, dWcList, dMaterialFamily, dTimeMatrix, dMateri
 			lMinFitness[1] = sMemberName
 			lMinFitness[2] = member["genome"]
 			lMinFitness[3] = member["breaker"]
-			lMinFitness[4] = "Generation: "+str(glob.iGenerationCount-1)
+			lMinFitness[4] = "Generation: "+str(iGenerationCount-1)
 
 		if fFitness < fMinFitness_run:
 			fMinFitness_run = fFitness
