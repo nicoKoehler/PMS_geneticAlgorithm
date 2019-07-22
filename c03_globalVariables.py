@@ -21,14 +21,14 @@ global bKingPrevails
 
 fMutationRate = 0.12	# best @ 1% 
 limPopulationSize = 250	# has to be multiple of 2
-iBreakGeneration = 40
+iBreakGeneration = 10
 iBreakImport = 10000
 iForceAllocation_G = 0.5
 
 iPastAverage = 5
 iNumberMachines = 4
 iDeletionProb = 0.5
-iCataclysmicProb = 0.1
+iCataclysmicProb = 0.02
 iChildCounter = limPopulationSize
 
 bKingPrevails = True

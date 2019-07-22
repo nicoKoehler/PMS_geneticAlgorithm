@@ -419,9 +419,8 @@ def udf_matingPMX(lPopulation_new, iChildCounter, lPopulation_new_names, dPopula
 
 
 # mutation by swaping
-def udf_mutateSwap(fMutationRate,lPopulation_offspring, dPopulation_offspring):
+def udf_mutateSwap(fMutationRate, dPopulation_offspring):
 	lchild_mutate = []
-	lPopulation_offspringMutated=[]
 
 	for j,child in dPopulation_offspring.items():		#iterate over all children
 		if random.uniform(0.0, 1.0) < fMutationRate:		#calculate random number; if lower than mutation rate, MUTATE
@@ -443,9 +442,7 @@ def udf_mutateSwap(fMutationRate,lPopulation_offspring, dPopulation_offspring):
 
 
 
-		lPopulation_offspringMutated.append(lchild_mutate)
 
-	return lPopulation_offspringMutated, dPopulation_offspring
 
 
 # DEPRECATED mutation

@@ -32,16 +32,8 @@ lMinFitness = [10000000, 'START', [],[],""]
 lMinFitness_history = [100000000]
 lFitness_history=[]
 lIllegal_history=[]
+
 ######################################### 1 DATA IMPORT ######################################### 
-
-# LOAD orders from SQL
-# -> 2 look up structure:
-# 		1) materials family
-# 		2) changeOver matrix
-#		3) Product Machine restrictions
-#		4) WC List
-
-# TO DO:
 
 
 ### 1.1 Get Material Family Data
@@ -221,7 +213,7 @@ while iGenerationCount < iBreakLoop:
 
 	# Mutating Time - execute swap-mutate function
 	lPopulation_offspringMutated = []
-	lPopulation_offspringMutated, dPopulation_offspring = gak.udf_mutateSwap(glob.fMutationRate,lPopulation_offspring, dPopulation_offspring)
+	gak.udf_mutateSwap(glob.fMutationRate, dPopulation_offspring)
 	
 
 	# overwrite previous population with new selected and offspring
