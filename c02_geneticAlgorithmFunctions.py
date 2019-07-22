@@ -420,6 +420,21 @@ def udf_matingPMX(lPopulation_new, iChildCounter, lPopulation_new_names, dPopula
 
 # mutation by swaping
 def udf_mutateSwap(fMutationRate, dPopulation_offspring):
+	'''
+	INPUT:
+	:param fMutationRate:			>float; rate of mutation
+	:param dPopulationOffspring:	>dict; offspring population
+
+
+	SIDE EFFECTS:
+	mutates all elements inside dictionary based on chance
+
+	RETURNS: 
+	none
+
+	SUMMARY:
+	'''
+	
 	lchild_mutate = []
 
 	for j,child in dPopulation_offspring.items():		#iterate over all children
@@ -439,10 +454,6 @@ def udf_mutateSwap(fMutationRate, dPopulation_offspring):
 			
 			lchild_mutate[fRandMutate1], lchild_mutate[fRandMutate2] = lchild_mutate[fRandMutate2], lchild_mutate[fRandMutate1]
 			dPopulation_offspring[j]["genome"] = lchild_mutate
-
-
-
-
 
 
 # DEPRECATED mutation
@@ -533,7 +544,7 @@ def udf_makeNewMember(lGenome_0):
 
 
 # procreation through cloning and subsequent mutation
-def udf_cloneMutate(lPopulation_new, lPopulation_new_names, dPopulation_new, dMembers, dMaterialFamily, dMachineConfig, dWcList, lGenome):
+def udf_cloneMutate(dPopulation_new, dMembers, dMaterialFamily, dMachineConfig, dWcList, lGenome):
 
 	'''
 	INPUT: 
@@ -643,20 +654,16 @@ def udf_cloneMutate(lPopulation_new, lPopulation_new_names, dPopulation_new, dMe
 		udf_listSortByBreak(lChild2, lChild2Break, 0)
 
 		glob.iChildCounter += 1
-		lPopulation_offspring.append(lChild1)
-		lPopulation_offspring_names.append("child"+str(glob.iChildCounter))
 		dPopulation_offspring["child"+str(glob.iChildCounter)]={}
 		dPopulation_offspring["child"+str(glob.iChildCounter)]["genome"]=lChild1
 		dPopulation_offspring["child"+str(glob.iChildCounter)]["breaker"]=lChild1Break
 
 		glob.iChildCounter += 1
-		lPopulation_offspring.append(lChild2)
-		lPopulation_offspring_names.append("child"+str(glob.iChildCounter))
 		dPopulation_offspring["child"+str(glob.iChildCounter)]={}
 		dPopulation_offspring["child"+str(glob.iChildCounter)]["genome"]=lChild2
 		dPopulation_offspring["child"+str(glob.iChildCounter)]["breaker"]=lChild2Break
 
-	return lPopulation_offspring, lPopulation_offspring_names, dPopulation_offspring
+	return dPopulation_offspring
 
 
 # identify illegal machine-material combinations

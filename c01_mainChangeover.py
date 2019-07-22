@@ -208,17 +208,12 @@ while iGenerationCount < iBreakLoop:
 	dPopulation_offspring ={}
 
 	# lPopulation_offspring, glob.iChildCounter, lPopulation_offspring_names, dPopulation_offspring = gak.udf_matingPMX(lPopulation_new, glob.iChildCounter, lPopulation_new_names, dPopulation_new, dMembers, glob.fMutationRate)
-	lPopulation_offspring, lPopulation_offspring_names, dPopulation_offspring = gak.udf_cloneMutate(lPopulation_new, lPopulation_new_names, dPopulation_new, dMembers, dMaterialFamily, dMachineConfig, dWcList, lGenome)
+	dPopulation_offspring = gak.udf_cloneMutate(dPopulation_new, dMembers, dMaterialFamily, dMachineConfig, dWcList, lGenome)
 
 
 	# Mutating Time - execute swap-mutate function
-	lPopulation_offspringMutated = []
 	gak.udf_mutateSwap(glob.fMutationRate, dPopulation_offspring)
-	
 
-	# overwrite previous population with new selected and offspring
-	lPopulation = lPopulation_new + lPopulation_offspringMutated
-	lPopulation_names = lPopulation_new_names + lPopulation_offspring_names
 
 	# recreate the population array with the selected parents from previous iteration
 	dPopulation={}
