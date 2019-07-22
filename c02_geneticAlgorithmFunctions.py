@@ -90,9 +90,6 @@ def udf_calcFitness3(dPopulation, dWcList, dMaterialFamily, dTimeMatrix, dMateri
 	#+++++++++++++++++++++++++++++++++++++++++++++++++++++++< MEMBER LOOP >+++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	for index0, (key,member) in enumerate(dPopulation.items()) :	# for every member in a population
 
-
-		#+++++++++++++++++++++++++++++++++++++++++++++++++++++++< MACHINE LOOP >+++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
 		iPreviousBreak = 0
 		fFitness = 0
 		iCountIndex1 = 0
@@ -102,7 +99,9 @@ def udf_calcFitness3(dPopulation, dWcList, dMaterialFamily, dTimeMatrix, dMateri
 
 		iTotalRuns +=1
 		iIllegalConfigMultiplier = 1
+		fPriorityPenalty = 1.0
 
+		#+++++++++++++++++++++++++++++++++++++++++++++++++++++++< MACHINE LOOP >+++++++++++++++++++++++++++++++++++++++++++++++++++++++
 		for k in range(0, glob.iNumberMachines):
 			
 			if k == glob.iNumberMachines-1:
@@ -111,7 +110,7 @@ def udf_calcFitness3(dPopulation, dWcList, dMaterialFamily, dTimeMatrix, dMateri
 			else:
 				iNextBreak = member["breaker"][k]
 
-			fFitnessM = 0 # reset fitness
+			fFitnessM = 0 # reset gene fitness
 			lGenomeW0 = [x for x in member["genome"][iPreviousBreak:iNextBreak] if x != 0]
 
 			#+++++++++++++++++++++++++++++++++++++++++++++++++++++++< GENE LOOP >+++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -124,6 +123,7 @@ def udf_calcFitness3(dPopulation, dWcList, dMaterialFamily, dTimeMatrix, dMateri
 					sMaterial2 = dWcList[lGenomeW0[index1+1]]['material']
 					sQuantity1 = dWcList[gene]['quantity']
 					sQuantity2 = dWcList[lGenomeW0[index1+1]]['quantity']
+					sPriority1 = dWcList[gene]['priority']
 					sFamily1 = dMaterialFamily[sMaterial1]['family']
 					sFamily2 = dMaterialFamily[sMaterial2]['family']
 					sCycleTime1 = dMaterialFamily[sMaterial1]['cycleTime']
@@ -151,11 +151,20 @@ def udf_calcFitness3(dPopulation, dWcList, dMaterialFamily, dTimeMatrix, dMateri
 					sQuantity1 = dWcList[gene]['quantity']
 					sCycleTime1 = dMaterialFamily[sMaterial1]['cycleTime']
 					sFamily1 = dMaterialFamily[sMaterial1]['family']
+					sPriority1 = dWcList[gene]['priority']
 					fFitnessM += (sQuantity1*sCycleTime1)  
 
-				if (k+1) in dMachineConfig[sFamily1] or (k+1) in dMachineConfig[sFamily2]:
+				if (k+1) in dMachineConfig[sFamily1]:
 					iIllegalConfigMultiplier += 50
 					bisIllegal = True
+
+				# calculate priority displacement penalty
+				fPriorityPenalty += max((index1-sPriority1)*1.0/len(lGenomeW0)*1.0,0)
+
+				# full check string
+				#print("M:",str(key),", m",str(k+1),"#",str(index1),": ", str(gene), " > ",str(dMachineConfig[sFamily1]), "> Illegal? ", str(bisIllegal), "> Priority: ", str(sPriority1), "> PriorityPenalty: ", str(fPriorityPenalty))
+
+				
 
 				iCountIndex1 += 1
 
@@ -163,9 +172,16 @@ def udf_calcFitness3(dPopulation, dWcList, dMaterialFamily, dTimeMatrix, dMateri
 			fFitness += fFitnessM
 			fFitnessBalance.append(fFitnessM)
 			iPreviousBreak = iNextBreak
+			
 
 		# add stDev of distribution as penalty term > the more uneven a population is, the higher the penalty
+		#print("Fitness w/o penalties: \t", str(fFitness))
 		fFitness = (fFitness+stat.stdev(fFitnessBalance))*iIllegalConfigMultiplier
+		#print("Fitness with spread: \t", str(fFitness))
+		fFitness *= fPriorityPenalty
+		#print("Fitness with Priority: \t", str(fFitness))
+
+
 
 		if bisIllegal == True:
 			iIllegalRuns +=1
@@ -194,6 +210,7 @@ def udf_calcFitness3(dPopulation, dWcList, dMaterialFamily, dTimeMatrix, dMateri
 		dMembers[sMemberName]['fitness'] = fFitness
 		dMembers[sMemberName]['genome'] = member["genome"]
 		dMembers[sMemberName]["illegal"] = iIllegalConfigMultiplier
+
 
 	return lFitness, dMembers, lMinFitness, fMinFitness_run, fIllegalPerc
 

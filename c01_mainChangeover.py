@@ -165,14 +165,14 @@ iBreakLoop = glob.iBreakGeneration
 while True:
 
 	glob.iGenerationCount += 1
-	print("--------------------------------- GENERATION: "+str(glob.iGenerationCount)+"---------------------------------")
+	# print("--------------------------------- GENERATION: "+str(glob.iGenerationCount)+"---------------------------------")
 
 
 	# execute function to calculate fitness of population
 	# determine randomly if a cataclysm should occur; cataclsym = "kills off" the population and fills it with newly created one
 	if random.uniform(0.0, 1.0) < glob.iCataclysmicProb and glob.bCataclysm == True:
 
-		print("<<<<<<<<<<<<<<<<<<< CATACLYSM TIME <<<<<<<<<<<<<<<<<<<")
+		# print("<<<<<<<<<<<<<<<<<<< CATACLYSM TIME <<<<<<<<<<<<<<<<<<<")
 
 		dPopulation = gak.udf_cataclysm(dPopulation, glob.lGenome_0)
 		# Add runs to the overall counter after cataclysm
