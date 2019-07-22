@@ -139,9 +139,11 @@ def udf_calcFitness3(dPopulation, dWcList, dMaterialFamily, dTimeMatrix, dMateri
 					fFitnessM += (sQuantity1*sCycleTime1)+(sChangeovertime) #calculate overall fitness for every pair
 					
 					# if machineNbr is in the MachineConfig (contains illegal configs), add a penalty term and set illegal flag
-					if (k+1) in dMachineConfig[sFamily1] or (k+1) in dMachineConfig[sFamily2]:
-						iIllegalConfigMultiplier += 50
-						bisIllegal = True
+					#if (k+1) in dMachineConfig[sFamily1] or (k+1) in dMachineConfig[sFamily2]:
+					#	iIllegalConfigMultiplier += 50
+					#	bisIllegal = True
+
+					
 
 				# for last member of the machine
 				else: 
@@ -151,9 +153,9 @@ def udf_calcFitness3(dPopulation, dWcList, dMaterialFamily, dTimeMatrix, dMateri
 					sFamily1 = dMaterialFamily[sMaterial1]['family']
 					fFitnessM += (sQuantity1*sCycleTime1)  
 
-					if (k+1) in dMachineConfig[sFamily1]:
-						iIllegalConfigMultiplier += 50
-						bisIllegal = True
+				if (k+1) in dMachineConfig[sFamily1] or (k+1) in dMachineConfig[sFamily2]:
+					iIllegalConfigMultiplier += 50
+					bisIllegal = True
 
 				iCountIndex1 += 1
 
@@ -432,6 +434,7 @@ def udf_mutateSwap(fMutationRate,lPopulation_offspring, dPopulation_offspring):
 	return lPopulation_offspringMutated, dPopulation_offspring
 
 
+# DEPRECATED mutation
 def udf_mutateRegen(lList,iGeneLen):
 	lchild_mutate = []
 	for i,item in enumerate(lList):		#iterate over all children
@@ -444,6 +447,7 @@ def udf_mutateRegen(lList,iGeneLen):
 			lList[i] = iNewBreak
 
 	return	lList
+
 
 # introduce cataclysm to kill off parts of the population
 def udf_cataclysm(dPopulation,lGenome):
@@ -476,6 +480,7 @@ def udf_cataclysm(dPopulation,lGenome):
 	return dPopulation
 
 
+# create a new member from genome
 def udf_makeNewMember(lGenome_0):
 	'''
 	INPUT:
@@ -516,6 +521,7 @@ def udf_makeNewMember(lGenome_0):
 	return lNewMember, lBreakGenome
 
 
+# procreation through cloning and subsequent mutation
 def udf_cloneMutate(lPopulation_new, lPopulation_new_names, dPopulation_new, dMembers, dMaterialFamily, dMachineConfig, dWcList, lGenome):
 
 	'''
@@ -642,6 +648,7 @@ def udf_cloneMutate(lPopulation_new, lPopulation_new_names, dPopulation_new, dMe
 	return lPopulation_offspring, lPopulation_offspring_names, dPopulation_offspring
 
 
+# identify illegal machine-material combinations
 def udf_identifyIllegals(lMemberGenome, lBreaker, dMaterialFamily, dMachineConfig, dWcList):
 
 	'''
@@ -692,6 +699,7 @@ def udf_identifyIllegals(lMemberGenome, lBreaker, dMaterialFamily, dMachineConfi
 	return lIllegals
 
 
+# sort a list within its segment by argument
 def udf_listSortByBreak(lList, lBreaker, sSortBy):
 
 	'''
@@ -743,6 +751,7 @@ def udf_listSortByBreak(lList, lBreaker, sSortBy):
 		iPreviousBreak = iNextBreak
 
 
+# print member to cmd and split by machine
 def udf_printMachinesCMD(lList, lBreaker, sMemberName):
 
 	'''
@@ -786,6 +795,7 @@ def udf_printMachinesCMD(lList, lBreaker, sMemberName):
 	print("--------------------------------------")
 
 
+# print member to cmd and split by machine
 def udf_printMachinesFamCMD(lList, lBreaker, memberName, dMaterialFamily, dWcList):
 	
 	'''
@@ -832,6 +842,7 @@ def udf_printMachinesFamCMD(lList, lBreaker, memberName, dMaterialFamily, dWcLis
 	print("--------------------------------------")
 
 
+# mutate member based on allowed combinations
 def udf_allowedMutations (lChild, lChildBreak, dWcList, dMaterialFamily, dMachineConfig):
 
 	'''

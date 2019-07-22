@@ -65,13 +65,14 @@ dfMaterialCO = pd.read_excel("C:\\Users\\u374441\\Desktop\\desktopWorkfiles\\201
 
 #fill WC List
 for index, row in dfWCImport.iterrows():
-
 	if index >= glob.iBreakImport:
 		break
 
 	dWcList[row.orderNumber]={}
 	dWcList[row.orderNumber]['material'] = row.materialCode
 	dWcList[row.orderNumber]['quantity'] = row.quantity
+	dWcList[row.orderNumber]['priority'] = row.priority
+
 
 
 #Create TimeMatrix dictionary from Query Results
