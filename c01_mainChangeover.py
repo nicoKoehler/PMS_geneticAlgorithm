@@ -26,10 +26,10 @@ import math
 import datetime
 
 
-fMinFitness = 100000000
+fMinFitness = 10000000000
 iGenerationCount = 0
-lMinFitness = [10000000, 'START', [],[],""]
-lMinFitness_history = [100000000]
+lMinFitness = [10000000000, 'START', [],[],""]
+lMinFitness_history = [10000000000]
 lFitness_history=[]
 lIllegal_history=[]
 
@@ -211,11 +211,12 @@ while iGenerationCount < iBreakLoop:
 
 	# calculate starting point for trailing average
 	iAvgStart = len(lMinFitness_history)-glob.iPastAverage
+
 	if iAvgStart < 5:
 		iAvgStart = 0
 
 	# break the while loop if no lower fitness could be found for "iAvgStart" number of generations
-	if sum(lMinFitness_history[(iAvgStart):(len(lMinFitness_history))]) < fMinFitness:
+	if sum(lMinFitness_history[(iAvgStart):(len(lMinFitness_history))])/((len(lMinFitness_history))-iAvgStart) == fMinFitness:
 		break
 
 

@@ -175,11 +175,8 @@ def udf_calcFitness3(dPopulation, dWcList, dMaterialFamily, dTimeMatrix, dMateri
 
 
 		# add stDev of distribution as penalty term > the more uneven a population is, the higher the penalty
-		#print("Fitness w/o penalties: \t", str(fFitness))
-		fFitness = (fFitness+stat.stdev(fFitnessBalance))*iIllegalConfigMultiplier
-		#print("Fitness with spread: \t", str(fFitness))
-		fFitness *= fPriorityPenalty
-		#print("Fitness with Priority: \t", str(fFitness))
+		fFitness = (fFitness+stat.stdev(fFitnessBalance))*iIllegalConfigMultiplier*fPriorityPenalty
+
 
 
 

@@ -19,16 +19,16 @@ global iForceAllocation_G
 #global lFamilyAtlas_0
 global bKingPrevails
 
-fMutationRate = 0.12	# best @ 1% 
+fMutationRate = 0.1	# best @ 10% 
 limPopulationSize = 250	# has to be multiple of 2
-iBreakGeneration = 10
+iBreakGeneration = 50
 iBreakImport = 10000
 iForceAllocation_G = 0.5
 
-iPastAverage = 5
+iPastAverage = 50
 iNumberMachines = 4
 iDeletionProb = 0.5
-iCataclysmicProb = 0.02
+iCataclysmicProb = 0.08
 iChildCounter = limPopulationSize
 
 bKingPrevails = True
