@@ -19,6 +19,9 @@ global iForceAllocation_G
 #global lFamilyAtlas_0
 global bKingPrevails
 
+global sPathToExcels
+
+sPathToExcels = "PATHtoEXCEL"
 fMutationRate = 0.1	# best @ 10% 
 limPopulationSize = 250	# has to be multiple of 2
 iBreakGeneration = 50

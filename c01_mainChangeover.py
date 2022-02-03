@@ -24,7 +24,7 @@ import sys
 import matplotlib.pyplot as plt
 import math
 import datetime
-
+import os
 
 fMinFitness = 10000000000
 iGenerationCount = 0
@@ -49,12 +49,14 @@ dMaterialCO ={}
 glob.lFamilyAtlas_0 = []
 glob.lMaterialAtlas_0 = []
 
+
+
 #import from Excel
-dfWCImport = pd.read_excel("C:\\Users\\u374441\\Desktop\\desktopWorkfiles\\201905 Changeovers\\03_co_setup_alternative.xlsx", sheet_name="order")
-dfFamilies = pd.read_excel("C:\\Users\\u374441\\Desktop\\desktopWorkfiles\\201905 Changeovers\\03_co_setup_alternative.xlsx", sheet_name="families")
-dfFamilyCO = pd.read_excel("C:\\Users\\u374441\\Desktop\\desktopWorkfiles\\201905 Changeovers\\03_co_setup_alternative.xlsx", sheet_name="familyCO")
-dfMachineConfig = pd.read_excel("C:\\Users\\u374441\\Desktop\\desktopWorkfiles\\201905 Changeovers\\03_co_setup_alternative.xlsx", sheet_name="notOnMachine")
-dfMaterialCO = pd.read_excel("C:\\Users\\u374441\\Desktop\\desktopWorkfiles\\201905 Changeovers\\03_co_setup_alternative.xlsx", sheet_name="materialCO")
+dfWCImport = pd.read_excel(os.path.join(glob.sPathToExcels, "03_co_setup_alternative.xlsx"), sheet_name="order")
+dfFamilies = pd.read_excel(os.path.join(glob.sPathToExcels, "03_co_setup_alternative.xlsx"), sheet_name="families")
+dfFamilyCO = pd.read_excel(os.path.join(glob.sPathToExcels, "03_co_setup_alternative.xlsx"), sheet_name="familyCO")
+dfMachineConfig = pd.read_excel(os.path.join(glob.sPathToExcels, "03_co_setup_alternative.xlsx"), sheet_name="notOnMachine")
+dfMaterialCO = pd.read_excel(os.path.join(glob.sPathToExcels, "03_co_setup_alternative.xlsx"), sheet_name="materialCO")
 
 #fill WC List
 for index, row in dfWCImport.iterrows():
@@ -91,8 +93,8 @@ for index, row in dfMaterialCO.iterrows():
 
 
 #open file to track usage history
-filePopulationHistory = open("C:\\Users\\u374441\\Desktop\\desktopWorkfiles\\201905 Changeovers\\90_populationHistory.txt", "w", encoding="utf-8")
-fileFitnessHistory_runs = open("C:\\Users\\u374441\\Desktop\\desktopWorkfiles\\201905 Changeovers\\91_fitnessRuns.txt", "a", encoding="utf-8")
+filePopulationHistory = open(os.path.join(glob.sPathToExcels, "90_populationHistory.txt"), "w", encoding="utf-8")
+fileFitnessHistory_runs = open(os.path.join(glob.sPathToExcels, "91_fitnessRuns.txt"), "a", encoding="utf-8")
 
 ######################################### 2 GA SETUP ######################################### 
 # TO DO
@@ -252,7 +254,7 @@ dateTime = datetime.datetime.now()
 iMilliseconds = int(round(dateTime.timestamp() * 1000))
 
 sFileNamePlot = str(iMilliseconds)+"__RESULT_"+str(math.floor(lMinFitness[0]))+"__orders_"+str(len(glob.lGenome_0))+"--machines_"+str(glob.iNumberMachines)+"--Runs_"+str(glob.iBreakGeneration)+"--popSize_"+str(glob.limPopulationSize)+"--mut_"+str(glob.fMutationRate)+"--King_"+str(glob.bKingPrevails)+"--fAlloc_"+str(glob.iForceAllocation_G)+"--CAT_"+str(glob.bCataclysm)+"_"+str(glob.iCataclysmicProb)+"_"+str(glob.iDeletionProb)
-sPlotPath = "C:\\Users\\u374441\\Desktop\\desktopWorkfiles\\201905 Changeovers\\99_Output\\"+sFileNamePlot+".png"
+sPlotPath = os.path.join(glob.sPathToExcels, "99_Output",sFileNamePlot+".png")
 
 # create subplot
 gFitness, ax1 = plt.subplots()

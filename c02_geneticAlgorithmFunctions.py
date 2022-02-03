@@ -6,8 +6,10 @@ import math
 import sys
 import statistics as stat
 import c03_globalVariables as glob
+import os
 
-filePopulationHistory = open("C:\\Users\\u374441\\Danfoss\\PS WF - MSA - Documents\\Projects\\2019 03 - Changeover\\populationHistory.txt", "w", encoding="utf-8")
+
+filePopulationHistory = open(os.path.join(glob.sPathToExcels, "populationHistory.txt"), "w", encoding="utf-8")
 
 
 # sort array by fitness
